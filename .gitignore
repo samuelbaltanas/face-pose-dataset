@@ -1,0 +1,7 @@
+models
+data/test
+
+.idea
+.mypy_cache
+.pytest_cache
+face_pose_dataset.egg-info

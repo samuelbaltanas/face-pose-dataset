@@ -1,0 +1,10 @@
+# Base
+numpy
+opencv-python
+# Camera
+openni
+opencv-python
+# Interface
+pyside2
+matplotlib
+seaborn

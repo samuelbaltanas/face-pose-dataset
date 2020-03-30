@@ -1,0 +1,22 @@
+# Standard requirements
+## Base
+numpy
+matplotlib
+matplotlib
+seaborn
+opencv-python
+keras
+tensorflow
+## Interface
+pyside2
+## Camera
+openni
+opencv-python
+# Dev requirements
+black  # Formatter
+flake8  # Linter
+isort  # Import formatter
+mypy  # Type checking
+pre-commit
+pytest  # Testing
+pytest-cov
