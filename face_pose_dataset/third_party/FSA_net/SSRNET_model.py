@@ -2,9 +2,9 @@ import logging
 import sys
 
 import numpy as np
-from keras import backend as K
-from keras import layers
-from keras.layers.convolutional import (
+from tensorflow.keras import backend as K
+from tensorflow.keras import layers
+from tensorflow.keras.layers import (
     AveragePooling2D,
     Conv2D,
     MaxPooling2D,

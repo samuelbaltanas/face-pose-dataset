@@ -5,8 +5,8 @@ import numpy as np
 
 # Necessary fix for Tensorflow v2
 import tensorflow.compat.v1 as tf
-from keras import backend as K
-from keras.layers import (  # Flatten,
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import (  # Flatten,
     Activation,
     AveragePooling2D,
     BatchNormalization,
@@ -20,7 +20,7 @@ from keras.layers import (  # Flatten,
     Reshape,
     SeparableConv2D,
 )
-from keras.models import Model
+from tensorflow.keras.models import Model
 
 # Necessary fix for RTX GPUs https://github.com/tensorflow/tensorflow/issues/28254
 from tensorflow.compat.v1 import InteractiveSession
@@ -428,7 +428,7 @@ class BaseFSANet(object):
                 input_preS
             )
 
-        feat_preS = Reshape((-1,))(feat_preS)
+        feat_preS = Reshape((-1, m_dim * (self.map_xy_size * self.map_xy_size * 3)))(feat_preS)
 
         SR_matrix = Dense(
             m_dim * (self.map_xy_size * self.map_xy_size * 3), activation="sigmoid",

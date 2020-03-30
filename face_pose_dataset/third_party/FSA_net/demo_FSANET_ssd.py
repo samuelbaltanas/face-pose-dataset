@@ -4,7 +4,7 @@ from math import cos, sin
 
 import cv2
 import numpy as np
-from keras.layers import Average
+from tensorflow.keras.layers import Average
 
 # from moviepy.editor import *
 from face_pose_dataset.third_party.FSA_net import FSANET_model

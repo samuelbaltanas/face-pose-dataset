@@ -3,7 +3,7 @@ import sys
 from PySide2 import QtWidgets
 
 from face_pose_dataset import pose_storage, ui
-
+from face_pose_dataset.ui import process
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -47,10 +47,17 @@ if __name__ == "__main__":
     window.resize(800, 600)
 
     # Central widget
-    widget = MainWidget(storage)
+    widget = MainWidget(storage.scores)
     window.setCentralWidget(widget)
 
     window.show()
+
+    # Launch estimation thread
+    # DONE: Move to main
+    th = process.EstimationThread(800, 600)
+    th.change_pixmap.connect(widget.video.set_image)
+    th.change_pose.connect(widget.plot.update_plot)
+    th.start()
 
     # Execute application
     sys.exit(app.exec_())

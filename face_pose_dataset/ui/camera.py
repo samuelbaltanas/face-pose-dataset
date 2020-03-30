@@ -54,10 +54,3 @@ class VideoWidget(QtWidgets.QWidget):
         # Set the layout to the QWidget
         self.setLayout(self.layout)
 
-        # Launch camera thread
-        # TODO: Move to main
-        th = process.CameraThread(self.width, self.height)
-        th.change_pixmap.connect(self.set_image)
-        th.start()
-
-        return th

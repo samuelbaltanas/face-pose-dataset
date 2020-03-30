@@ -3,7 +3,9 @@ import os
 
 import cv2
 import numpy as np
-from keras.layers import Average
+import tensorflow.compat.v1 as tf
+from tensorflow.keras.layers import Average
+import keras.backend.tensorflow_backend as K
 
 import face_pose_dataset as fpdata
 from face_pose_dataset.third_party.FSA_net import FSANET_model
@@ -107,52 +109,56 @@ class FSAEstimator:
         m_dim = 5
         S_set = [num_capsule, dim_capsule, routings, num_primcaps, m_dim]
 
-        model1 = FSANET_model.FSA_net_Capsule(
-            image_size, num_classes, stage_num, lambda_d, S_set
-        )()
-        model2 = FSANET_model.FSA_net_Var_Capsule(
-            image_size, num_classes, stage_num, lambda_d, S_set
-        )()
+        self.graph = tf.get_default_graph()
+        with self.graph.as_default():
+            model1 = FSANET_model.FSA_net_Capsule(
+                image_size, num_classes, stage_num, lambda_d, S_set
+            )()
+            model2 = FSANET_model.FSA_net_Var_Capsule(
+                image_size, num_classes, stage_num, lambda_d, S_set
+            )()
 
-        num_primcaps = 8 * 8 * 3
-        S_set = [num_capsule, dim_capsule, routings, num_primcaps, m_dim]
+            num_primcaps = 8 * 8 * 3
+            S_set = [num_capsule, dim_capsule, routings, num_primcaps, m_dim]
 
-        model3 = FSANET_model.FSA_net_noS_Capsule(
-            image_size, num_classes, stage_num, lambda_d, S_set
-        )()
+            model3 = FSANET_model.FSA_net_noS_Capsule(
+                image_size, num_classes, stage_num, lambda_d, S_set
+            )()
 
-        logging.debug("Loading models ...")
+            logging.debug("Loading models ...")
 
-        weight_file1 = os.path.join(
-            fpdata.PROJECT_ROOT,
-            "models/FSA_300W_LP_model/fsanet_capsule_3_16_2_21_5/fsanet_capsule_3_16_2_21_5.h5",
-        )
-        model1.load_weights(weight_file1)
-        logging.debug("Finished loading model 1.")
+            weight_file1 = os.path.join(
+                fpdata.PROJECT_ROOT,
+                "models/FSA_300W_LP_model/fsanet_capsule_3_16_2_21_5/fsanet_capsule_3_16_2_21_5.h5",
+            )
+            model1.load_weights(weight_file1)
+            logging.debug("Finished loading model 1.")
 
-        weight_file2 = os.path.join(
-            fpdata.PROJECT_ROOT,
-            "models/FSA_300W_LP_model/fsanet_var_capsule_3_16_2_21_5/fsanet_var_capsule_3_16_2_21_5.h5",
-        )
-        model2.load_weights(weight_file2)
-        logging.debug("Finished loading model 2.")
+            weight_file2 = os.path.join(
+                fpdata.PROJECT_ROOT,
+                "models/FSA_300W_LP_model/fsanet_var_capsule_3_16_2_21_5/fsanet_var_capsule_3_16_2_21_5.h5",
+            )
+            model2.load_weights(weight_file2)
+            logging.debug("Finished loading model 2.")
 
-        weight_file3 = os.path.join(
-            fpdata.PROJECT_ROOT,
-            "models/FSA_300W_LP_model/fsanet_noS_capsule_3_16_2_192_5/fsanet_noS_capsule_3_16_2_192_5.h5",
-        )
-        model3.load_weights(weight_file3)
-        logging.debug("Finished loading model 3.")
+            weight_file3 = os.path.join(
+                fpdata.PROJECT_ROOT,
+                "models/FSA_300W_LP_model/fsanet_noS_capsule_3_16_2_192_5/fsanet_noS_capsule_3_16_2_192_5.h5",
+            )
+            model3.load_weights(weight_file3)
+            logging.debug("Finished loading model 3.")
 
-        inputs = FSANET_model.Input(shape=(64, 64, 3))
-        x1 = model1(inputs)  # 1x1
-        x2 = model2(inputs)  # var
-        x3 = model3(inputs)  # w/o
-        avg_model = Average()([x1, x2, x3])
-        self.model = FSANET_model.Model(inputs=inputs, outputs=avg_model)
+            inputs = FSANET_model.Input(shape=(64, 64, 3))
+            x1 = model1(inputs)  # 1x1
+            x2 = model2(inputs)  # var
+            x3 = model3(inputs)  # w/o
+            avg_model = Average()([x1, x2, x3])
+
+            self.model = FSANET_model.Model(inputs=inputs, outputs=avg_model)
 
     def run(self, input_images: np.ndarray) -> np.ndarray:
-        p_result = self.model.predict(input_images)
+        with self.graph.as_default():
+            p_result = self.model.predict(input_images)
 
         return p_result
 

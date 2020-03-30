@@ -12,9 +12,9 @@ Antoine Miech, Ivan Laptev, Josef Sivic
 """
 import math
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 import tensorflow as tf
-from keras import layers
+from tensorflow.keras import layers
 
 # Keras version
 

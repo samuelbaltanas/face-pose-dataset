@@ -17,19 +17,20 @@ from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget
 from face_pose_dataset import pose_storage
 from face_pose_dataset.visualization import heatmap
 
+
 __all__ = ["MatplotlibWidget"]
 
 
 class DSL(QObject):
-    dataChanged = Signal(np.ndarray, tuple)
+    dataChanged = Signal(tuple)
 
-    def __init__(self, storage: pose_storage.ScoreMatrix, parent=None):
+    def __init__(self, storage: np.ndarray, parent=None):
         # LOAD HMI
         super().__init__(parent)
 
         # Data to be visualized
         self.idx = 0.1
-        self.data: pose_storage.ScoreMatrix = storage
+        self.data: np.ndarray = storage
 
     def mainLoop(self):
         self.data.scores -= self.idx
@@ -40,7 +41,7 @@ class DSL(QObject):
 
 
 class MatplotlibWidget(QWidget):
-    def __init__(self, storage: pose_storage.ScoreMatrix, parent=None):
+    def __init__(self, storage: np.ndarray, parent=None):
         super().__init__(parent)
         # plt.style.use('dark_background')
         fig = figure.Figure(
@@ -69,10 +70,10 @@ class MatplotlibWidget(QWidget):
         fig.tight_layout()
         self.setFixedSize(600, 600)
 
-    @Slot(np.ndarray, Tuple[float, float])
-    def update_plot(self, data: np.ndarray, pos: Tuple[float, float]):
-        self.hmap.set_data(data)
-        self.pointer.set_offsets([pos[0], pos[1]])
+    @Slot(Tuple[float, float])
+    def update_plot(self, pos: Tuple[float, float]):
+        # self.hmap.set_data(data)
+        self.pointer.set_offsets([[pos[0], pos[1]]])
         self.canvas.draw()
 
 
@@ -100,7 +101,7 @@ if __name__ == "__main__":
         dims, pitch_range=pitch_range, yaw_range=yaw_range
     )
 
-    dsl = DSL(storage)
+    dsl = DSL(storage.scores)
 
     matplotlib_widget = MatplotlibWidget(storage)
     matplotlib_widget.show()

@@ -16,8 +16,8 @@ import keras.backend as K
 
 # import tensorflow as tf
 import tensorflow.compat.v1 as tf
-from keras import initializers
-from keras.layers import Layer
+from tensorflow.keras import initializers
+from tensorflow.keras.layers import Layer
 
 from .utils import register_keras_custom_object
 
