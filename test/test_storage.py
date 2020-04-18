@@ -1,16 +1,17 @@
 import unittest
 
-from face_pose_dataset import core, pose_storage
+from face_pose_dataset import core
+from face_pose_dataset.model import score
 
 
 class AngleEstimationTest(unittest.TestCase):
     def setUp(self):
         # PARAMS
         self.dims = 10, 10
-        self.yaw_range = pose_storage.DEFAULT_YAW_RANGE
-        self.pitch_range = pose_storage.DEFAULT_PITCH_RANGE
+        self.yaw_range = score.DEFAULT_YAW_RANGE
+        self.pitch_range = score.DEFAULT_PITCH_RANGE
 
-        self.storage = pose_storage.ScoreMatrix(
+        self.storage = score.ScoreModel(
             self.dims, pitch_range=self.pitch_range, yaw_range=self.yaw_range
         )
 
@@ -44,10 +45,10 @@ class PoseEstimationTest(unittest.TestCase):
     def setUp(self):
         # PARAMS
         self.dims = 10, 10
-        self.yaw_range = pose_storage.DEFAULT_YAW_RANGE
-        self.pitch_range = pose_storage.DEFAULT_PITCH_RANGE
+        self.yaw_range = score.DEFAULT_YAW_RANGE
+        self.pitch_range = score.DEFAULT_PITCH_RANGE
 
-        self.storage = pose_storage.ScoreMatrix(
+        self.storage = score.ScoreModel(
             self.dims, pitch_range=self.pitch_range, yaw_range=self.yaw_range
         )
 
@@ -83,6 +84,12 @@ class PoseEstimationTest(unittest.TestCase):
         ref_pos = self.storage.locate_angle(angle)
 
         self.assertEqual(pos, ref_pos)
+
+    def test_iloc(self):
+        angle = core.Angle(0.0, 18.0, 9.0)
+        pos = self.storage.iloc(angle)
+
+        self.assertEqual(pos, (5.5, 5.5))
 
 
 if __name__ == "__main__":

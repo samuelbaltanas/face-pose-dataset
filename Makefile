@@ -29,8 +29,8 @@ format:
 	${PYTHON} -m black ${SRC}
 
 lint: format
-	${PYTHON} -m mypy ${SRC}
 	${PYTHON} -m flake8 ${SRC}
+	${PYTHON} -m mypy ${SRC}
 
 test:
 	${PYTHON} -m pytest
