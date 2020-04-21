@@ -12,7 +12,7 @@ from tqdm.autonotebook import tqdm
 
 from face_pose_dataset.core import Angle
 
-from .aux import project_points
+from . import aux
 
 # Default paths to the dataset
 BIWI_DIR = "/home/sam/Datasets/data/hpdb/"
@@ -27,7 +27,8 @@ class BiwiDatum(NamedTuple):
     path: str
     center3d: np.ndarray
     angle: Angle
-    frame: int
+    identity: int
+    frame_num: int
 
     def read_image(self):
         """ Load frame image. """
@@ -53,20 +54,15 @@ def read_ground_truth(fd):
     return translation, angle_from_matrix(rotation)
 
 
-def angle_from_matrix(rotation_matrix: np.ndarray) -> Angle:
+def angle_from_matrix(rot: np.ndarray) -> Angle:
     """ Transform rotation matrix to Euclidean angle. """
-    rotation_matrix = rotation_matrix.T
+    rot = rot.T
 
-    roll = -np.arctan2(rotation_matrix[1, 0], rotation_matrix[0][0]) * 180 / np.pi
+    roll = -np.arctan2(rot[1, 0], rot[0][0]) * 180 / np.pi
     yaw = (
-        -np.arctan2(
-            -rotation_matrix[2, 0],
-            np.sqrt(rotation_matrix[2, 1] ** 2 + rotation_matrix[2, 2] ** 2),
-        )
-        * 180
-        / np.pi
+        -np.arctan2(-rot[2, 0], np.sqrt(rot[2, 1] ** 2 + rot[2, 2] ** 2),) * 180 / np.pi
     )
-    pitch = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2]) * 180 / np.pi
+    pitch = np.arctan2(rot[2, 1], rot[2, 2]) * 180 / np.pi
 
     return Angle(roll, pitch, yaw)
 
@@ -80,9 +76,9 @@ def match_detection(
         :param ground_truth: Ground truth from BIWI. 3D point corresponding to the center of the face.
 
     """
-    projected = project_points(center)[0].ravel()
+    projected = aux.project_points(center)[0].ravel()
 
-    best: Tuple[Optional[int], np.float] = (None, np.infty)
+    best: Tuple[int, np.float] = (-1, np.infty)
     for idx, bbox in enumerate(det_data):
 
         diff_x = (bbox[2] - bbox[0]) * margin / 2
@@ -107,6 +103,7 @@ def match_detection(
             )
             if dist < best[1]:
                 best = idx, dist
+
     return best[0]
 
 
@@ -123,10 +120,16 @@ class BiwiIndividual:
             if fname.name.endswith(".png")
         ):
             index = int(image_file.split("_")[1])
-            pose_file = path.join(self.directory, "frame_{}_pose.txt".format(index))
+            pose_file = path.join(self.directory, "frame_{:05d}_pose.txt".format(index))
             center3d, angle = read_ground_truth(pose_file)
 
-            yield BiwiDatum(image_file, center3d, angle)
+            yield BiwiDatum(
+                path=path.join(self.directory, image_file),
+                center3d=center3d,
+                angle=angle,
+                identity=self.index,
+                frame_num=index,
+            )
 
     def __getitem__(self, index: integer):
 
@@ -141,7 +144,7 @@ class BiwiIndividual:
 
         center3d, angle = read_ground_truth(pose_file)
 
-        return BiwiDatum(image_file, center3d, angle, int(index))
+        return BiwiDatum(image_file, center3d, angle, self.index, int(index))
 
 
 class BiwiDataset:
@@ -193,7 +196,7 @@ class BiwiDataset:
         with tqdm(total=self.__len__) as tq:
             for dat in self:
                 data["identity"].append(dat.identity)
-                data["frame"].append(dat.frame)
+                data["frame"].append(dat.frame_num)
                 data["center_x"].append(dat.center3d[0])
                 data["center_y"].append(dat.center3d[1])
                 data["center_z"].append(dat.center3d[2])
