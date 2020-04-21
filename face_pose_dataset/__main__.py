@@ -49,8 +49,8 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     dims = 7, 7
-    yaw_range = score.DEFAULT_YAW_RANGE
-    pitch_range = (-45, 45)
+    yaw_range = -70.0, 70.0
+    pitch_range = -40., 40.
 
     # MODELS
     scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     # VIEW
     window = MainWindow()
-    window.resize(500, 300)
+    window.resize(1200, 720)
     login_widget = login.Login()
 
     window.register_layout("login", login_widget)

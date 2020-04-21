@@ -33,8 +33,8 @@ class MainWidget(QtWidgets.QWidget):
 
         self.layout = QtWidgets.QGridLayout()
 
-        self.layout.addWidget(self.plot, 0, 0, 2, 2)
-        self.layout.addWidget(self.video, 0, 2, 1, 2)
-        self.layout.addWidget(self.controls, 1, 2, 1, 2)
+        self.layout.addWidget(self.plot, 0, 0, 2, 4)
+        self.layout.addWidget(self.video, 0, 4, 1, 2)
+        self.layout.addWidget(self.controls, 1, 4, 1, 2)
 
         self.setLayout(self.layout)

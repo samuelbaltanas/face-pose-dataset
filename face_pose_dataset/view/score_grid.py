@@ -136,7 +136,7 @@ class MatplotlibWidget(QWidget):
         )
 
         fig.tight_layout()
-        self.setFixedSize(600, 600)
+        # self.setFixedSize(600, 600)
 
     @Slot(np.ndarray)
     def update_plot(self, scores: np.ndarray):

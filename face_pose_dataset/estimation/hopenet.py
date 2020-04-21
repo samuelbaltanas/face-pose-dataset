@@ -1,4 +1,5 @@
 from typing import Tuple
+from os import path
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -8,6 +9,7 @@ from PIL import Image
 from torch.autograd import Variable
 from torchvision import transforms
 
+import face_pose_dataset as fpdata
 from face_pose_dataset import core
 from face_pose_dataset.third_party.hopenet import hopenet
 
@@ -18,10 +20,12 @@ cudnn.enabled = True  # type: ignore
 __all__ = ["HopenetEstimator"]
 
 
+MODEL_PATH=path.join(fpdata.PROJECT_ROOT, "models/hopenet/hopenet_alpha1.pkl")
+
 class HopenetEstimator(interface.Estimator):
     def __init__(
         self,
-        snapshot_path="/home/sam/Workspace/exploration/deep-head-pose/models/hopenet_alpha1.pkl",
+        snapshot_path=MODEL_PATH,
         gpu=0,
     ):
         # ResNet50 structure

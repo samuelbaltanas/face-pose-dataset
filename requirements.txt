@@ -1,18 +1,23 @@
 # Base
 numpy~=1.18.1
-opencv-python~=4.2.0.32
+matplotlib~=3.2.0
+pandas~=1.0.3
+Pillow~=7.0.0
+scipy~=1.4.1
+
 # Camera
 openni~=2.3.0
-opencv-python
+opencv-python~=4.2.0.32
+
 # Interface
 pyside2~=5.14.1
-matplotlib~=3.2.0
+
+# Machine learning
 tensorflow~=2.1.0
 scikit-image~=0.16.2
 torch~=1.4.0
 torchvision~=0.5.0
-pandas~=1.0.3
+
+# Misc
 setuptools~=40.8.0
 tqdm~=4.45.0
-Pillow~=7.0.0
-scipy~=1.4.1

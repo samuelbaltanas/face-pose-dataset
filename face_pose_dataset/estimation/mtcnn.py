@@ -1,9 +1,10 @@
 from typing import List, Optional, Tuple, Union
+from os import path
 
 import cv2
 import numpy as np
 from skimage import transform as trans
-
+import face_pose_dataset as fpdata
 from face_pose_dataset.third_party.mtcnn_sandberg import mtcnn_keras, mtcnn_tensorflow
 
 _FEATURE_TRANSFORM = np.array(
@@ -16,6 +17,8 @@ _FEATURE_TRANSFORM = np.array(
     ],
     dtype=np.float32,
 )
+
+MODEL_PATH = path.join(fpdata.PROJECT_ROOT, 'models/mtcnn_tensorflow/')
 
 Margin = Union[int, float]
 MarginDescriptor = Union[
@@ -106,11 +109,6 @@ def extract_face(
 
     if landmark is not None:
         target_features = _FEATURE_TRANSFORM
-
-        # TODO: Find why this is done
-        if output_size[1] == 112:
-            target_features[:, 0] += 8.0
-
         source_features = landmark.astype(np.float32)
 
         tform = trans.SimilarityTransform()
@@ -193,7 +191,7 @@ class MTCNN:
 
     def __init__(
         self,
-        model_root="/home/sam/Workspace/projects/4-ImageGathering/face_pose_dataset/models/mtcnn_tensorflow",
+        model_root=MODEL_PATH,
     ):
         # DONE: Changes to work with tensorflow v2
 

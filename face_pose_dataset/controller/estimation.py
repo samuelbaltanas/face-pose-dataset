@@ -1,6 +1,7 @@
 import logging
 import time
 
+import cv2
 import tensorflow as tf
 from PySide2 import QtCore
 
@@ -61,6 +62,8 @@ class EstimationThread(QtCore.QThread):
                 frame, depth = cam.read_both()
                 self.video_feed.emit(frame)
 
+                frame = cv2.cvtColor(frame.astype("uint8"), cv2.COLOR_BGR2RGB)
+
                 if self.is_paused:
                     self.cond.wait(self.mutex)
                     continue
@@ -78,10 +81,10 @@ class EstimationThread(QtCore.QThread):
 
                     logging.debug("Sending angle %s .", ang)
 
-                    estimation = EstimationData(
+                    est = EstimationData(
                         box=bbox, angle=ang, rgb=frame, depth=depth
                     )
-                    self.result_signal.emit(estimation)
+                    self.result_signal.emit(est)
 
                 # DONE. Change sleep to use elapsed time.
                 elapsed_time = time.time() - start_time

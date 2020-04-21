@@ -1,9 +1,12 @@
+from os import path
+
 import cv2
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 from torchvision import transforms
 
+import face_pose_dataset as fpdata
 from face_pose_dataset import core
 from face_pose_dataset.estimation import interface
 from face_pose_dataset.third_party.ddfa.mobilenet_v1 import mobilenet_1 as mobilenet
@@ -12,10 +15,13 @@ from face_pose_dataset.third_party.ddfa.utils import estimate_pose, inference
 __all__ = ["DdfaEstimator"]
 
 
+MODEL_PATH=path.join(fpdata.PROJECT_ROOT, "models/3ddfa-configs/phase1_wpdc_vdc.pth.tar")
+
+
 class DdfaEstimator(interface.Estimator):
     def __init__(
         self,
-        checkpoint="/home/sam/Workspace/projects/4-ImageGathering/face_pose_dataset/models/3ddfa-configs/phase1_wpdc_vdc.pth.tar",
+        checkpoint=MODEL_PATH,
         gpu=True,
     ):
         self.checkpoint = torch.load(
