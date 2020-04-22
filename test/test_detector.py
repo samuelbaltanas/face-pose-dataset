@@ -8,7 +8,7 @@ import tensorflow as tf
 import face_pose_dataset as fpdat
 from face_pose_dataset.estimation import mtcnn
 
-# TODO: Use Sandberg MTCNN
+# DONE: Use Sandberg MTCNN
 
 gpus = tf.config.experimental.list_physical_devices("GPU")
 if gpus:

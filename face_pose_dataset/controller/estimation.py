@@ -8,7 +8,9 @@ from PySide2 import QtCore
 from face_pose_dataset import camera, estimation
 from face_pose_dataset.core import EstimationData, Image
 
+# TODO Move this piece of code to a startup function.
 gpus = tf.config.experimental.list_physical_devices("GPU")
+
 if gpus:
     try:
         # Currently, memory growth needs to be the same across GPUs
@@ -54,6 +56,10 @@ class EstimationThread(QtCore.QThread):
         if self.camera is None:
             self.cond.wait(self.mutex)
 
+        # DONE Fix error with opencv camera
+        # SOL. Error in waiting condition for thread (wake before camera is set).
+
+        # TODO: Brainstorm for solutions (slow fps on cpu)
         with self.camera() as cam:
             while True:
                 bbox = None
@@ -62,6 +68,7 @@ class EstimationThread(QtCore.QThread):
                 frame, depth = cam.read_both()
                 self.video_feed.emit(frame)
 
+                # TODO: RGB/BGR discrepancy between Astra and opencv cameras
                 frame = cv2.cvtColor(frame.astype("uint8"), cv2.COLOR_BGR2RGB)
 
                 if self.is_paused:
@@ -81,9 +88,7 @@ class EstimationThread(QtCore.QThread):
 
                     logging.debug("Sending angle %s .", ang)
 
-                    est = EstimationData(
-                        box=bbox, angle=ang, rgb=frame, depth=depth
-                    )
+                    est = EstimationData(box=bbox, angle=ang, rgb=frame, depth=depth)
                     self.result_signal.emit(est)
 
                 # DONE. Change sleep to use elapsed time.
@@ -116,7 +121,7 @@ class EstimationThread(QtCore.QThread):
     @property
     def is_paused(self):
         """ Check if thread should be paused """
-        return self._paused and self.camera is not None
+        return self._paused or self.camera is None
 
     def try_wake(self):
         """ Performs sanity check and wakes up thread if needed """

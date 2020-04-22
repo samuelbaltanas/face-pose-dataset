@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     dims = 7, 7
     yaw_range = -70.0, 70.0
-    pitch_range = -40., 40.
+    pitch_range = -40.0, 40.0
 
     # MODELS
     scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)

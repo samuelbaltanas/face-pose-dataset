@@ -1,9 +1,10 @@
-from typing import List, Optional, Tuple, Union
 from os import path
+from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 from skimage import transform as trans
+
 import face_pose_dataset as fpdata
 from face_pose_dataset.third_party.mtcnn_sandberg import mtcnn_keras, mtcnn_tensorflow
 
@@ -18,7 +19,7 @@ _FEATURE_TRANSFORM = np.array(
     dtype=np.float32,
 )
 
-MODEL_PATH = path.join(fpdata.PROJECT_ROOT, 'models/mtcnn_tensorflow/')
+MODEL_PATH = path.join(fpdata.PROJECT_ROOT, "models/mtcnn_tensorflow/")
 
 Margin = Union[int, float]
 MarginDescriptor = Union[
@@ -190,8 +191,7 @@ class MTCNN:
     factor = 0.709
 
     def __init__(
-        self,
-        model_root=MODEL_PATH,
+        self, model_root=MODEL_PATH,
     ):
         # DONE: Changes to work with tensorflow v2
 

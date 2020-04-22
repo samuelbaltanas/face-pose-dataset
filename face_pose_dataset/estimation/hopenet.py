@@ -1,5 +1,5 @@
-from typing import Tuple
 from os import path
+from typing import Tuple
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -15,27 +15,35 @@ from face_pose_dataset.third_party.hopenet import hopenet
 
 from . import interface, mtcnn
 
-cudnn.enabled = True  # type: ignore
+if torch.cuda.is_available():
+    cudnn.enabled = True  # type: ignore
 
 __all__ = ["HopenetEstimator"]
 
 
-MODEL_PATH=path.join(fpdata.PROJECT_ROOT, "models/hopenet/hopenet_alpha1.pkl")
+MODEL_PATH = path.join(fpdata.PROJECT_ROOT, "models/hopenet/hopenet_alpha1.pkl")
+
 
 class HopenetEstimator(interface.Estimator):
     def __init__(
-        self,
-        snapshot_path=MODEL_PATH,
-        gpu=0,
+        self, snapshot_path=MODEL_PATH, gpu=0,
     ):
+
+        # Gpu and cpu compatibility as per Pytorch guidelines in:
+        # https://pytorch.org/docs/stable/notes/cuda.html#device-agnostic-code
+        self.device = torch.device(
+            "cuda:{}".format(gpu) if torch.cuda.is_available() else "cpu"
+        )
+
         # ResNet50 structure
         self.model = hopenet.Hopenet(
             torchvision.models.resnet.Bottleneck, [3, 4, 6, 3], 66
         )
+        self.model.to(self.device)
 
         print("Loading snapshot.")
         # Load snapshot
-        saved_state_dict = torch.load(snapshot_path)
+        saved_state_dict = torch.load(snapshot_path, map_location=self.device)
         self.model.load_state_dict(saved_state_dict)
 
         self.transformations = transforms.Compose(
@@ -48,20 +56,18 @@ class HopenetEstimator(interface.Estimator):
                 ),
             ]
         )
-        self.gpu = gpu
-        self.model.cuda(self.gpu)
 
         # Test the Model
         self.model.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
 
         self.idx_tensor = list(range(66))
-        self.idx_tensor = torch.FloatTensor(self.idx_tensor).cuda(self.gpu)
+        self.idx_tensor = torch.FloatTensor(self.idx_tensor).to(self.device)
 
     def preprocess_image(self, frame, bbox):
         res = mtcnn.extract_face(
             frame, (224, 224), bbox, margin=(0.4, 0.7, 0.4, 0.1), normalize=False
         )
-        # TODO: Test if color conversion is needed.
+        # DONE: Test if color conversion is needed.
         # res = cv2.cvtColor(res.astype("uint8"), cv2.COLOR_BGR2RGB)
         return res
 
@@ -72,7 +78,7 @@ class HopenetEstimator(interface.Estimator):
         img = self.transformations(img)
         img_shape = img.size()
         img = img.view(1, img_shape[0], img_shape[1], img_shape[2])
-        img = Variable(img).cuda(self.gpu)
+        img = Variable(img).to(self.device)
 
         yaw, pitch, roll = self.model(img)
 

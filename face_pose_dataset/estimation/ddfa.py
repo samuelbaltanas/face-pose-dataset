@@ -15,15 +15,24 @@ from face_pose_dataset.third_party.ddfa.utils import estimate_pose, inference
 __all__ = ["DdfaEstimator"]
 
 
-MODEL_PATH=path.join(fpdata.PROJECT_ROOT, "models/3ddfa-configs/phase1_wpdc_vdc.pth.tar")
+MODEL_PATH = path.join(
+    fpdata.PROJECT_ROOT, "models/3ddfa-configs/phase1_wpdc_vdc.pth.tar"
+)
+
+if torch.cuda.is_available():
+    cudnn.benchmark = True
 
 
 class DdfaEstimator(interface.Estimator):
     def __init__(
-        self,
-        checkpoint=MODEL_PATH,
-        gpu=True,
+        self, checkpoint=MODEL_PATH, gpu=0,
     ):
+        # Gpu and cpu compatibility as per Pytorch guidelines in:
+        # https://pytorch.org/docs/stable/notes/cuda.html#device-agnostic-code
+        self.device = torch.device(
+            "cuda:{}".format(gpu) if torch.cuda.is_available() else "cpu"
+        )
+
         self.checkpoint = torch.load(
             checkpoint, map_location=lambda storage, loc: storage
         )["state_dict"]
@@ -36,9 +45,7 @@ class DdfaEstimator(interface.Estimator):
         for k in self.checkpoint.keys():
             model_dict[k.replace("module.", "")] = self.checkpoint[k]
         self.model.load_state_dict(model_dict)
-        if gpu:
-            cudnn.benchmark = True
-            self.model = self.model.cuda()
+        self.model.to(self.device)
         self.model.eval()
 
         # DONE: Test transforms to use builtin methods.

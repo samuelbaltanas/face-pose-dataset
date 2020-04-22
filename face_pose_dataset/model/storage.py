@@ -10,7 +10,7 @@ from PySide2 import QtCore
 
 from face_pose_dataset.core import EstimationData, Position
 
-PATH = "/home/sam/Desktop/sample/"
+PATH = "/home/sam/Desktop/"
 
 
 mutex = QtCore.QMutex()
@@ -29,19 +29,25 @@ class DatasetModel:
         self.identity = identity
         self.id_path = path.join(self.path, self.identity)
 
+        # TODO: Fix folder creation, top folder of the dataset should be created the first time.
+        # Traceback (most recent call last):
+        #   File "/home/sam/Desktop/Workspace/work/projects/4-PoseEstimation/face-pose-dataset/face_pose_dataset/controller/logging_controller.py", line 20, in access
+        #     self.storage.add_identity(id)
+        #   File "/home/sam/Desktop/Workspace/work/projects/4-PoseEstimation/face-pose-dataset/face_pose_dataset/model/storage.py", line 33, in add_identity
+        #     os.mkdir(self.id_path)
+        # FileNotFoundError: [Errno 2] No such file or directory: '/home/sam/Desktop/sample/sam'
         if not os.path.isdir(self.id_path):
             os.mkdir(self.id_path)
-
-        # TODO: Else condition
 
         logging.debug("Creating new folder: %s", self.id_path)
 
     def save_image(self, key: Position, data: EstimationData):
-        d = {}
-        d["roll"] = float(data.angle.roll)
-        d["pitch"] = float(data.angle.pitch)
-        d["yaw"] = float(data.angle.yaw)
-        d["bbox"] = data.box[:4].astype(int).tolist()
+        d = {
+            "roll": float(data.angle.roll),
+            "pitch": float(data.angle.pitch),
+            "yaw": float(data.angle.yaw),
+            "bbox": data.box[:4].astype(int).tolist(),
+        }
 
         rgb_image = _path_gen(key, False)
         d["rgb_image"] = rgb_image

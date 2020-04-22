@@ -1,8 +1,9 @@
 import logging
+import os
 
 from PySide2 import QtCore, QtWidgets
 
-# TODO. Interface for setting a path
+# DONE. Interface for setting a path
 # Example in https://gist.github.com/MalloyDelacroix/2c509d6bcad35c7e35b1851dfc32d161
 # https://david-estevez.gitbooks.io/tutorial-pyside-pyqt4/content/06_dialog.html
 
@@ -10,14 +11,15 @@ from PySide2 import QtCore, QtWidgets
 class Login(QtWidgets.QWidget):
     switch_window = QtCore.Signal(str, str, str)
 
-    def __init__(self):
+    def __init__(self, default_path="~"):
         QtWidgets.QWidget.__init__(self)
         self.setWindowTitle("Login")
 
         layout = QtWidgets.QGridLayout()
 
         fol = QtWidgets.QGroupBox(title="Dataset root:")
-        self.folder_edit = QtWidgets.QLineEdit("/home/sam/Desktop/sample/")
+        default_path = os.path.expanduser(default_path)
+        self.folder_edit = QtWidgets.QLineEdit(default_path)
         self.folder_select = QtWidgets.QToolButton(text="...")
         self.folder_select.clicked.connect(self.onInputFileButtonClicked)
 

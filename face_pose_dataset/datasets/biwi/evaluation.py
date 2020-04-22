@@ -69,16 +69,17 @@ def eval_on_biwi(estimator_name: str, results_file="results.pkl"):
             results["image_id"].append(dat.identity)
             results["image_frame"].append(dat.frame_num)
 
+            # TODO Fix estimated angles' signs to fit the BIWI ones.
             results["roll"].append(est_angle.roll)
             results["pitch"].append(est_angle.pitch)
             results["yaw"].append(est_angle.yaw)
 
-            # TODO Store ground truth
+            # DONE Store ground truth
             results["true_pitch"].append(true_angle.pitch)
             results["true_roll"].append(true_angle.roll)
             results["true_yaw"].append(true_angle.yaw)
 
-            # TODO Store error
+            # TODO Change to use individual errors
             results["error"].append(err)
 
             pbar.update(1)
