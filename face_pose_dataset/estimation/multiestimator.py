@@ -25,7 +25,8 @@ class MultiEstimator(interface.Estimator):
 
     def run(self, input_images: Tuple[np.ndarray, ...]) -> core.Angle:
         r = [est(frame) for est, frame in zip(self.estimators, input_images)]
-
         r = np.array(r).mean(axis=0)
+
+        # TODO. Use error on validation datasets as weights for mean
         res = core.Angle(*r)
         return res

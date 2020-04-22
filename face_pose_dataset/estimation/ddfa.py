@@ -38,24 +38,21 @@ class DdfaEstimator(interface.Estimator):
         )["state_dict"]
         self.model = mobilenet(
             num_classes=62
-        )  # 62 = 12(pose) + 40(shape) +10(expression)
+        )  # 62 = 12 (pose) + 40 (shape) +10 (expression)
 
         model_dict = self.model.state_dict()
         # because the model is trained by multiple gpus, prefix module should be removed
         for k in self.checkpoint.keys():
             model_dict[k.replace("module.", "")] = self.checkpoint[k]
         self.model.load_state_dict(model_dict)
-        self.model.to(self.device)
+        self.model = self.model.to(self.device)
         self.model.eval()
 
         # DONE: Test transforms to use builtin methods.
-
         # ORIGINAL
-
         # self.transform = transforms.Compose(
         #     [ddfa.ToTensorGjz(), ddfa.NormalizeGjz(mean=127.5, std=128)]
         # )
-
         self.transformations = transforms.Compose(
             [
                 # transforms.Scale(224),
@@ -80,8 +77,7 @@ class DdfaEstimator(interface.Estimator):
     def run(self, frame: np.ndarray) -> core.Angle:
         frame = self.transformations(frame).unsqueeze(0)
         with torch.no_grad():
-            if self.gpu:
-                frame = frame.cuda()
+            frame = frame.to(self.device)
             param = self.model(frame)
             param = param.squeeze().cpu().numpy().flatten().astype(np.float32)
 

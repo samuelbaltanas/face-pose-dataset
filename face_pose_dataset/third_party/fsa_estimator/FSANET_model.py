@@ -146,7 +146,7 @@ class MatrixMultiplyLayer(Layer):
 
     def call(self, inputs):
         x1, x2 = inputs
-        # TODO: add some asserts on the inputs
+        # TO DO: add some asserts on the inputs
         # it is expected the shape of inputs are
         # arranged to be able to perform the matrix multiplication
         return tf.matmul(x1, x2)
