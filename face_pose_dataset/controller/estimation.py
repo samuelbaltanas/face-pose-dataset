@@ -1,27 +1,11 @@
 import logging
 import time
 
-import cv2
-import tensorflow as tf
+import numpy as np
 from PySide2 import QtCore
 
 from face_pose_dataset import camera, estimation
 from face_pose_dataset.core import EstimationData, Image
-
-# TODO Move this piece of code to a startup function.
-gpus = tf.config.experimental.list_physical_devices("GPU")
-
-if gpus:
-    try:
-        # Currently, memory growth needs to be the same across GPUs
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
-        # Memory growth must be set before GPUs have been initialized
-        print(e)
-
 
 COMPATIBLE_CAMERAS = {
     "astra": camera.AstraCamera,
@@ -38,6 +22,7 @@ class EstimationThread(QtCore.QThread):
         self.width = width
         self.height = height
         self.delay = delay
+        self.runs = True
 
         self.mutex = QtCore.QMutex()
         self.cond = QtCore.QWaitCondition()
@@ -50,7 +35,7 @@ class EstimationThread(QtCore.QThread):
         # self.estimator = estimation.HopenetEstimator()
         # self.estimator = estimation.DdfaEstimator()
         # self.estimator = estimation.FSAEstimator()
-        self.estimator = estimation.MultiEstimator()
+        self.estimator = estimation.AverageEstimator()
 
     def run(self):
         if self.camera is None:
@@ -61,7 +46,7 @@ class EstimationThread(QtCore.QThread):
 
         # TODO: Brainstorm for solutions (slow fps on cpu)
         with self.camera() as cam:
-            while True:
+            while self.runs:
                 bbox = None
                 start_time = time.time()
 
@@ -73,12 +58,21 @@ class EstimationThread(QtCore.QThread):
                     continue
 
                 # DONE. Compute frames.
-
                 res = self.detector.run(frame, threshold=0.8)
 
                 if res is not None:
-                    # TODO. Improve selection process on multiple faces.
-                    bbox = res[0][0][:4]
+                    # DONE. Improve selection process on multiple faces. Use centermost bbox.
+                    if len(res[0]) > 1:
+                        bboxes = np.array(res[0])[:, :4]
+                        frame_center = np.array(frame.shape)[:2] // 2
+                        boxes_center = np.abs(bboxes[:, ::2] - bboxes[:, 1::2]) // 2
+                        idx = np.argmin(
+                            np.sum(np.abs(boxes_center - frame_center), axis=1)
+                        )
+
+                        bbox = bboxes[idx]
+                    else:
+                        bbox = res[0][0][:4]
 
                     det = self.estimator.preprocess_image(frame, bbox)
                     ang = self.estimator.run(det)
@@ -96,9 +90,6 @@ class EstimationThread(QtCore.QThread):
                     logging.debug("Estimation thread sleep for: %s", sleep_time)
                     time.sleep(sleep_time)
 
-    def __del__(self):
-        self.terminate()
-
     def toggle_pause(self,):
         self._paused = not self._paused
         self.try_wake()
@@ -107,6 +98,10 @@ class EstimationThread(QtCore.QThread):
     def set_pause(self, b: bool):
         self._paused = b
         self.try_wake()
+
+    @QtCore.Slot(bool)
+    def set_stop(self, b: bool):
+        self.runs = not b
 
     @QtCore.Slot(str)
     def init_camera(self, camera_string):

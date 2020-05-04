@@ -29,18 +29,6 @@ class DatasetModel:
         self.identity = identity
         self.id_path = path.join(self.path, self.identity)
 
-        # TODO: Fix folder creation, top folder of the dataset should be created the first time.
-        # Traceback (most recent call last):
-        #   File "/home/sam/Desktop/Workspace/work/projects/4-PoseEstimation/face-pose-dataset/face_pose_dataset/controller/logging_controller.py", line 20, in access
-        #     self.storage.add_identity(id)
-        #   File "/home/sam/Desktop/Workspace/work/projects/4-PoseEstimation/face-pose-dataset/face_pose_dataset/model/storage.py", line 33, in add_identity
-        #     os.mkdir(self.id_path)
-        # FileNotFoundError: [Errno 2] No such file or directory: '/home/sam/Desktop/sample/sam'
-        if not os.path.isdir(self.id_path):
-            os.mkdir(self.id_path)
-
-        logging.debug("Creating new folder: %s", self.id_path)
-
     def save_image(self, key: Position, data: EstimationData):
         d = {
             "roll": float(data.angle.roll),
@@ -59,9 +47,11 @@ class DatasetModel:
         self.data[key] = d
 
         mutex.lock()
-        cv2.imwrite(path.join(self.id_path, rgb_image), data.rgb)
+        image = cv2.cvtColor(data.rgb, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(path.join(self.id_path, rgb_image), image)
         if data.depth is not None:
             cv2.imwrite(path.join(self.id_path, depth_image), data.depth)
+            # np.save(path.join(self.id_path, depth_image), data.depth)
         mutex.unlock()
 
     def dump_data(self):

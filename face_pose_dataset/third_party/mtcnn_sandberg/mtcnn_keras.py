@@ -32,6 +32,7 @@ from tensorflow.python.framework.ops import disable_eager_execution
 
 # REF: https://www.tensorflow.org/guide/gpu#allowing_gpu_memory_growth
 gpus = tf.config.experimental.list_physical_devices("GPU")
+
 if gpus:
     try:
         # Currently, memory growth needs to be the same across GPUs

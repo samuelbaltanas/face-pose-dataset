@@ -10,6 +10,7 @@ from face_pose_dataset.model import score, storage
 class StorageController(QtCore.QObject):
     change_pos = QtCore.Signal(tuple)
     flag_pause = QtCore.Signal(bool)
+    flag_end = QtCore.Signal(bool)
 
     def __init__(self, app, scores: score.ScoreModel, storage: storage.DatasetModel):
         super().__init__()
@@ -42,6 +43,7 @@ class StorageController(QtCore.QObject):
         if ret == QMessageBox.Ok:
             self.storage.dump_data()
             logging.debug("Quitting application")
+            self.flag_end.emit(True)
             self.app.quit()
         elif ret == QMessageBox.Cancel:
             self.flag_pause.emit(False)

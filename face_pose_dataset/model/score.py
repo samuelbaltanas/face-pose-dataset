@@ -11,6 +11,8 @@ from face_pose_dataset.core import Angle
 DEFAULT_YAW_RANGE = -90.0, 90.0  # horizontal
 DEFAULT_PITCH_RANGE = -40.0, 40.0  # vertical
 
+YAW_DIR = -1
+PITCH_DIR = -1
 
 class ScoreModel(QtCore.QObject):
     change_score = QtCore.Signal(np.ndarray)
@@ -25,8 +27,8 @@ class ScoreModel(QtCore.QObject):
         self._min_yaw = yaw_range[0]
         self._yaw_inc = (yaw_range[1] - yaw_range[0]) / dimensions[1]
 
-        self._min_pitch = pitch_range[0]
-        self._pitch_inc = (pitch_range[1] - pitch_range[0]) / dimensions[0]
+        self._min_pitch = pitch_range[1]
+        self._pitch_inc = - (pitch_range[1] - pitch_range[0]) / dimensions[0]
 
         self._score_max = np.sqrt(self._yaw_inc ** 2 + self._pitch_inc ** 2) / 2
 

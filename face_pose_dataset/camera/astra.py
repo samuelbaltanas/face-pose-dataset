@@ -1,5 +1,6 @@
 from typing import Optional
 
+import cv2
 import numpy as np
 from openni import _openni2 as c_api
 from openni import openni2
@@ -68,24 +69,28 @@ class AstraCamera:
     def read_depth(self):
         frame = self.depth_stream.read_frame()
         frame_data = frame.get_buffer_as_uint16()
-        depth_array = np.ndarray(
-            (PROPERTIES["height"], PROPERTIES["width"]),
-            dtype=np.uint16,
-            buffer=frame_data,
-        )
+        # Put the depth frame into a numpy array and reshape it
+        depth_array = np.frombuffer(frame_data, dtype=np.uint16)
+        depth_array = depth_array.reshape((PROPERTIES["height"], PROPERTIES["width"]))
+        # depth_array.shape = (1, 480, 640)
+        # depth_array = np.ndarray(
+        #     (PROPERTIES["height"], PROPERTIES["width"]),
+        #     dtype=np.uint16,
+        #     buffer=frame_data,
+        # )
 
         return depth_array
 
     def read_rgb(self):
         frame = self.video_stream.read_frame()
         frame_data = frame.get_buffer_as_uint8()
-        rgb_array = np.ndarray(
+        frame = np.ndarray(
             (PROPERTIES["height"], PROPERTIES["width"], 3),
             dtype=np.uint8,
             buffer=frame_data,
         )
 
-        return rgb_array
+        return frame
 
     def read_both(self):
         return self.read_rgb(), self.read_depth()

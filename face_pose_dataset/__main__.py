@@ -86,6 +86,7 @@ if __name__ == "__main__":
     logger.set_camera.connect(th.init_camera)
 
     store_controller.flag_pause.connect(th.set_pause)
+    store_controller.flag_end.connect(th.set_stop)
     logger.signal_pause.connect(th.set_pause)
     widget.controls.buttons[0].clicked.connect(th.toggle_pause)
 
