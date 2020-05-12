@@ -36,6 +36,8 @@ class EstimationThread(QtCore.QThread):
         # self.estimator = estimation.DdfaEstimator()
         # self.estimator = estimation.FSAEstimator()
         self.estimator = estimation.AverageEstimator()
+        # self.estimator = estimation.SklearnEstimator()
+        # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
 
     def run(self):
         if self.camera is None:

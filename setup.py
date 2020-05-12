@@ -3,12 +3,12 @@ from setuptools import setup, find_packages
 setup(
     name="face_pose_dataset",
     version="0.1.0",
-    packages=find_packages(),
+    packages=["face_pose_dataset"],
     url="",
     license="",
     author="Samuel Baltanas",
     author_email="sambalmol@uma.es",
-    description="",
+    description="Face pose gathering tool.",
     entry_points={
         "console_scripts": [
             "face_pose_dataset = face_pose_dataset.__main__:main",
@@ -29,5 +29,6 @@ setup(
         'torchvision',
         'tqdm',
     ],
+    # package_data={'face_pose_dataset': ['models']},
     include_package_data=True,
 )

@@ -1,4 +1,6 @@
 data
+notebooks
+reports
 
 .idea
 .mypy_cache

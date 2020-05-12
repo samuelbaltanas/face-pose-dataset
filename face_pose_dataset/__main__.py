@@ -49,8 +49,8 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     dims = 7, 7
-    yaw_range = -70.0, 70.0
-    pitch_range = -40.0, 40.0
+    yaw_range = -65.0, 65.0
+    pitch_range = -35.0, 35.0
 
     # MODELS
     scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)
