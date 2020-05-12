@@ -11,13 +11,16 @@ from face_pose_dataset import core
 from face_pose_dataset.estimation import interface
 from face_pose_dataset.third_party.ddfa.mobilenet_v1 import mobilenet_1 as mobilenet
 from face_pose_dataset.third_party.ddfa.utils import estimate_pose, inference
+import pkg_resources
 
 __all__ = ["DdfaEstimator"]
 
 
-MODEL_PATH = path.join(
-    fpdata.PROJECT_ROOT, "models", "3ddfa-configs", "phase1_wpdc_vdc.pth.tar"
-)
+# MODEL_PATH = path.join(
+#     fpdata.PROJECT_ROOT, "data", "3ddfa-configs", "phase1_wpdc_vdc.pth.tar"
+# )
+
+MODEL_PATH = pkg_resources.resource_stream("face_pose_dataset", "data/3ddfa-configs/phase1_wpdc_vdc.pth.tar")
 
 if torch.cuda.is_available():
     cudnn.benchmark = True  # type: ignore

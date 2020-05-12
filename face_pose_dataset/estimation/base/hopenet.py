@@ -1,6 +1,7 @@
 from os import path
 from typing import Tuple
 
+import pkg_resources
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as func
@@ -20,7 +21,8 @@ if torch.cuda.is_available():
 __all__ = ["HopenetEstimator"]
 
 
-MODEL_PATH = path.join(fpdata.PROJECT_ROOT, "models/hopenet/hopenet_alpha1.pkl")
+MODEL_PATH = pkg_resources.resource_stream(
+                "face_pose_dataset", "data/hopenet/hopenet_alpha1.pkl")
 
 
 class HopenetEstimator(interface.Estimator):

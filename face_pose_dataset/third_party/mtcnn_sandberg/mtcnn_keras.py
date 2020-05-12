@@ -209,7 +209,7 @@ def test_net():
 
 
 def generate_models(
-    model_root="/home/sam/Workspace/projects/4-ImageGathering/face_pose_dataset/models/mtcnn_tensorflow/",
+    model_root,
     save=False,
 ):
     pnet = load_nnet(

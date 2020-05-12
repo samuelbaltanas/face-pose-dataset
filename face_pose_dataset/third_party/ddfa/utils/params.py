@@ -5,6 +5,7 @@ import os.path as osp
 import pickle
 
 import numpy as np
+import pkg_resources
 
 
 def _load(fp):
@@ -20,7 +21,8 @@ def make_abs_path(d):
     return osp.join(osp.dirname(osp.realpath(__file__)), d)
 
 
-d = make_abs_path("../../../../models/3ddfa-configs")
+d = pkg_resources.resource_filename(
+                "face_pose_dataset", "/data/3ddfa-configs")
 keypoints = _load(osp.join(d, "keypoints_sim.npy"))
 w_shp = _load(osp.join(d, "w_shp_sim.npy"))
 w_exp = _load(osp.join(d, "w_exp_sim.npy"))  # simplified version

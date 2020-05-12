@@ -50,7 +50,7 @@ class AverageEstimator(interface.Estimator):
 class SklearnEstimator(interface.Estimator):
     def __init__(self, method = ""):
         self.origin = AverageEstimator(activation='concat')
-        MODEL_ROOT = pathlib.Path("/home/sam/Workspace/projects/5-ImageGathering/face_pose_estimation/models/sklearn/biwi")
+        MODEL_ROOT = pathlib.Path("/home/sam/Workspace/projects/5-ImageGathering/face_pose_estimation/data/sklearn/biwi")
         with open(MODEL_ROOT.joinpath("best-linear_svm.pkl"), "rb") as f:
             self.est = pickle.load(f)
 

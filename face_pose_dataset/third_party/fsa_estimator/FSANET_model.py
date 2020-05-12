@@ -508,7 +508,7 @@ class BaseFSANet(object):
         logging.debug("Creating model...")
         img_inputs = Input(self._input_shape)
 
-        # Build various models
+        # Build various data
         ssr_G_model = self.ssr_G_model_build(img_inputs)
 
         if self.is_noS_model:
@@ -622,7 +622,7 @@ class FSA_net_noS_Capsule_FC(FSA_net_noS_Capsule):
         self.is_fc_model = True
 
 
-# NetVLAD models
+# NetVLAD data
 
 
 class BaseNetVLADFSANet(BaseFSANet):
@@ -705,7 +705,7 @@ class FSA_net_noS_NetVLAD_FC(FSA_net_noS_NetVLAD):
         self.is_fc_model = True
 
 
-# // Metric models
+# // Metric data
 
 
 class BaseMetricFSANet(BaseFSANet):

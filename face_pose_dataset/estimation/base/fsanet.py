@@ -11,6 +11,7 @@ import face_pose_dataset as fpdata
 from face_pose_dataset import core
 from face_pose_dataset.estimation import interface, mtcnn
 from face_pose_dataset.third_party.fsa_estimator import FSANET_model
+import pkg_resources
 
 # tf.disable_v2_behavior()
 
@@ -24,11 +25,11 @@ class SSDDetector:
         # load our serialized face detector from disk
         logging.debug("Loading face detector.")
         proto_path = os.path.join(
-            fpdata.PROJECT_ROOT, "models", "face_detector", "deploy.prototxt"
+            fpdata.PROJECT_ROOT, "data", "face_detector", "deploy.prototxt"
         )
         model_path = os.path.join(
             fpdata.PROJECT_ROOT,
-            "models",
+            "data",
             "face_detector",
             "res10_300x300_ssd_iter_140000.caffemodel",
         )
@@ -134,34 +135,25 @@ class FSAEstimator(interface.Estimator):
                 self.img_size[0], num_classes, stage_num, lambda_d, s_set
             )()
 
-            logging.debug("Loading models ...")
+            logging.debug("Loading data ...")
 
-            weight_file1 = os.path.join(
-                fpdata.PROJECT_ROOT,
-                "models",
-                "FSA_300W_LP_model",
-                "fsanet_capsule_3_16_2_21_5",
-                "fsanet_capsule_3_16_2_21_5.h5",
+            weight_file1 = pkg_resources.resource_filename(
+                "face_pose_dataset",
+                "data/FSA_300W_LP_model/fsanet_capsule_3_16_2_21_5/fsanet_capsule_3_16_2_21_5.h5",
             )
             model1.load_weights(weight_file1)
             logging.debug("Finished loading model 1.")
 
-            weight_file2 = os.path.join(
-                fpdata.PROJECT_ROOT,
-                "models",
-                "FSA_300W_LP_model",
-                "fsanet_var_capsule_3_16_2_21_5",
-                "fsanet_var_capsule_3_16_2_21_5.h5",
+            weight_file2 = pkg_resources.resource_filename(
+                "face_pose_dataset",
+                "data/FSA_300W_LP_model/fsanet_var_capsule_3_16_2_21_5/fsanet_var_capsule_3_16_2_21_5.h5",
             )
             model2.load_weights(weight_file2)
             logging.debug("Finished loading model 2.")
 
-            weight_file3 = os.path.join(
-                fpdata.PROJECT_ROOT,
-                "models",
-                "FSA_300W_LP_model",
-                "fsanet_noS_capsule_3_16_2_192_5",
-                "fsanet_noS_capsule_3_16_2_192_5.h5",
+            weight_file3 = pkg_resources.resource_filename(
+                "face_pose_dataset",
+                "data/FSA_300W_LP_model/fsanet_noS_capsule_3_16_2_192_5/fsanet_noS_capsule_3_16_2_192_5.h5",
             )
             model3.load_weights(weight_file3)
             logging.debug("Finished loading model 3.")

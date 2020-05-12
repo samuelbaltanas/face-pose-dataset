@@ -169,7 +169,7 @@ def main():
         image_size, num_classes, stage_num, lambda_d, S_set
     )()
 
-    print("Loading models ...")
+    print("Loading data ...")
 
     weight_file1 = "../pre-trained/FSA_300W_LP_model/fsanet_capsule_3_16_2_21_5/fsanet_capsule_3_16_2_21_5.h5"
     model1.load_weights(weight_file1)

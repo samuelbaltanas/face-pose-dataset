@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
+import pkg_resources
 from skimage import transform as trans
 
 import face_pose_dataset as fpdata
@@ -19,7 +20,8 @@ _FEATURE_TRANSFORM = np.array(
     dtype=np.float32,
 )
 
-MODEL_PATH = path.join(fpdata.PROJECT_ROOT, "models/mtcnn_tensorflow/")
+MODEL_PATH = pkg_resources.resource_filename(
+                "face_pose_dataset", "data/mtcnn_tensorflow/")
 
 Margin = Union[int, float]
 MarginDescriptor = Union[

@@ -10,7 +10,7 @@ openni~=2.3.0
 opencv-python~=4.2.0.32
 
 # Interface
-pyside2~=5.14.1
+pyside2==5.12
 
 # Machine learning
 tensorflow~=2.1.0

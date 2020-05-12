@@ -1,6 +1,6 @@
 """ This code is modified from the following paper.
 Learnable mOdUle for Pooling fEatures (LOUPE)
-Contains a collection of models (NetVLAD, NetRVLAD, NetFV and Soft-DBoW)
+Contains a collection of data (NetVLAD, NetRVLAD, NetFV and Soft-DBoW)
 which enables pooling of a list of features into a single compact
 representation.
 
