@@ -26,7 +26,7 @@ def heatmap(
     value_range,
     ax=None,
     label_format="%.2f",
-    cbar_kw=None,
+    cbar_kw={"fraction" : 0.046, "pad" :0.04},
     cbarlabel="",
     **kwargs
 ):
@@ -64,7 +64,8 @@ def heatmap(
     im.set_clim(value_range)
 
     # Create colorbar
-    # cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.invert_yaxis()
     # cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
 
     # We want to show all ticks...
@@ -109,7 +110,7 @@ class MatplotlibWidget(QWidget):
         super().__init__(parent)
         # plt.style.use('dark_background')
         fig = figure.Figure(
-            figsize=(7, 5), dpi=65, facecolor=(1, 1, 1), edgecolor=(0, 0, 0)
+            figsize=(7, 7), dpi=65, facecolor=(1, 1, 1), edgecolor=(0, 0, 0)
         )
 
         self.canvas = FigureCanvas(fig)
@@ -127,6 +128,7 @@ class MatplotlibWidget(QWidget):
             col_labels=storage.x_range,
             value_range=storage.z_range,
             ax=self.ax,
+            cmap="coolwarm",
         )
 
         self.storage = storage
