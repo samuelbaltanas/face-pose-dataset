@@ -143,7 +143,7 @@ class MatplotlibWidget(QWidget):
         self.hmap.set_data(self.storage.scores)
         self.canvas.draw()
 
-    @Slot(Tuple[float, float])
+    @Slot(tuple)
     def update_pointer(self, pos: Tuple[float, float]):
         self.pointer.set_offsets(np.array(pos).reshape(-1, 2))
         self.canvas.draw()

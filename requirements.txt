@@ -10,15 +10,19 @@ openni~=2.3.0
 opencv-python~=4.2.0.32
 
 # Interface
-pyside2==5.12
+PySide2~=5.14
 
 # Machine learning
-tensorflow~=2.1.0
+tensorflow~=2.2.0
 scikit-image~=0.16.2
-torch~=1.4.0
-torchvision~=0.5.0
+
 pytorch-lightning~=0.7.5
 
 # Misc
 setuptools~=41.0.0
 tqdm~=4.45.0
+
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.4.0+cpu
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torchvision==0.5.0+cpu

@@ -16,13 +16,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.kill_callback = None
         # self.setGeometry(300, 200, 500, 400)
 
-    def register_layout(self, key, layout):
-        self.layouts[key] = layout
+    def register_layout(self, key, layout, resolution=(600, 360)):
+        self.layouts[key] = layout, resolution
 
     @QtCore.Slot(str)
     def change_layout(self, key: str):
         lay = self.layouts[key]
-        self.setCentralWidget(lay)
+        self.setCentralWidget(lay[0])
+        window.resize(*lay[1])
         self.show()
 
     def closeEvent(self, event):
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
     # VIEW
     window = MainWindow()
-    window.resize(1200, 720)
+    window.resize(600, 360)
     login_widget = login.Login()
 
     window.register_layout("login", login_widget)
@@ -67,7 +68,7 @@ if __name__ == "__main__":
 
     # Central widget
     widget = main.MainWidget(scores)
-    window.register_layout("main", widget)
+    window.register_layout("main", widget, (1200, 720))
 
     # CONTROLLERS
     store_controller = storage_control.StorageController(app, scores, store)
@@ -79,8 +80,8 @@ if __name__ == "__main__":
     th = estimation.EstimationThread(800, 600)
     th.video_feed.connect(widget.video.set_image)
     th.result_signal.connect(store_controller.process)
-    th.setTerminationEnabled(True)
-    th.start()
+    #th.setTerminationEnabled(True)
+
 
     login_widget.switch_window.connect(logger.access)
     logger.set_camera.connect(th.init_camera)
@@ -97,4 +98,18 @@ if __name__ == "__main__":
     window.kill_callback = lambda x: store_controller.terminateApp()
 
     # Execute application
-    sys.exit(app.exec_())
+    print("Exec")
+
+    sys._excepthook = sys.excepthook
+
+    def exception_hook(exctype, value, traceback):
+        print(exctype, value, traceback)
+        sys._excepthook(exctype, value, traceback)
+        sys.exit(-1)
+
+    sys.excepthook = exception_hook
+    th.start()
+    res = app.exec_()
+    print("Terminated")
+    sys.exit(res)
+

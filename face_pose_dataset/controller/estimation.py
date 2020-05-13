@@ -29,6 +29,7 @@ class EstimationThread(QtCore.QThread):
         self._paused = True
         self.camera = None
 
+    def start_est(self):
         # Face pose estimation
         # self.detector = estimation.SSDDetector()
         self.detector = estimation.MTCNN()
@@ -39,15 +40,22 @@ class EstimationThread(QtCore.QThread):
         # self.estimator = estimation.SklearnEstimator()
         # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
 
+        logging.debug("Estimator loaded.")
+
     def run(self):
+        logging.debug("Estimation thread starting.")
+        self.start_est()
         if self.camera is None:
+            logging.debug("Pausing thread.")
             self.cond.wait(self.mutex)
+            logging.debug("Resuming thread.")
 
         # DONE Fix error with opencv camera
         # SOL. Error in waiting condition for thread (wake before camera is set).
 
         # TODO: Brainstorm for solutions (slow fps on cpu)
         with self.camera() as cam:
+            logging.debug("Camera started.")
             while self.runs:
                 bbox = None
                 start_time = time.time()
@@ -97,13 +105,14 @@ class EstimationThread(QtCore.QThread):
         self.try_wake()
 
     @QtCore.Slot(bool)
-    def set_pause(self, b: bool):
+    def set_pause(self, b: bool = True):
         self._paused = b
         self.try_wake()
 
     @QtCore.Slot(bool)
     def set_stop(self, b: bool):
         self.runs = not b
+        self.quit()
 
     @QtCore.Slot(str)
     def init_camera(self, camera_string):

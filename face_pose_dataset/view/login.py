@@ -49,7 +49,7 @@ class Login(QtWidgets.QWidget):
 
     def make_id_widget(self):
         fol = QtWidgets.QGroupBox(title="ID:")
-        self.id_edit = QtWidgets.QLineEdit("sam")
+        self.id_edit = QtWidgets.QLineEdit("Default_name")
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.id_edit)
         fol.setLayout(hbox)
