@@ -17,10 +17,15 @@ The system has been tested under:
         git clone https://github.com/samuelbaltanas/face-pose-dataset.git
     ```
 2. (Optional) Create a virtual environment using [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
-2. Install the projects' requirements using:
-    ```bash
-        pip3 install -r requirements.txt
-    ```
+2. Install the projects' requirements:
+    - Option 1. For general use install the CPU-only requirements:
+        ```bash
+            pip3 install -r requirements-cpu.txt
+        ```
+    - Option 2. If you have a GPU and CUDA installed use:
+        ```bash
+            pip3 install -r requirements.txt
+        ```
 
 3. From the projects' root folder run:
     ```bash
