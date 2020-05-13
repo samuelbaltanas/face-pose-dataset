@@ -38,7 +38,7 @@ class Login(QtWidgets.QWidget):
         groupBox = QtWidgets.QGroupBox("Exclusive Radio Buttons")
         self.radio1 = QtWidgets.QRadioButton("Webcam")
         self.radio2 = QtWidgets.QRadioButton("Orbecc Astra")
-        self.radio2.setChecked(True)
+        self.radio1.setChecked(True)
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.radio1)
         vbox.addWidget(self.radio2)
