@@ -51,15 +51,14 @@ class DatasetModel:
         cv2.imwrite(path.join(self.id_path, rgb_image), image)
         if data.depth is not None:
             cv2.imwrite(path.join(self.id_path, depth_image), data.depth)
-            # np.save(path.join(self.id_path, depth_image), data.depth)
         mutex.unlock()
 
     def dump_data(self):
         if self.id_path is not None:
             fpath = path.join(self.id_path, "record-{}.json".format(self.identity))
             with open(fpath, "w") as f:
-                logging.debug(
-                    "Saving info of individual %s in %s", self.identity, fpath
+                logging.info(
+                    "[DATA] Saving info of individual %s in %s", self.identity, fpath
                 )
                 json.dump(list(self.data.values()), f)
 

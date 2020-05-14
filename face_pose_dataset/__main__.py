@@ -58,24 +58,25 @@ def main(args):
 
         logging.info(args)
 
+        # PARAMS
         dims = 7, 7
         yaw_range = -65.0, 65.0
         pitch_range = -35.0, 35.0
 
         # MODELS
         scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)
-
         store = storage.DatasetModel(shape=dims)
 
         # VIEW
         window = MainWindow()
         window.resize(600, 360)
-        login_widget = login.Login()
 
+        # Login
+        login_widget = login.Login()
         window.register_layout("login", login_widget)
         window.change_layout("login")
 
-        # Central widget
+        # Main widget
         widget = main_view.MainWidget(scores)
         window.register_layout("main", widget, (1200, 720))
 
@@ -100,18 +101,17 @@ def main(args):
         logger.set_camera.connect(th.init_camera)
 
         store_controller.flag_pause.connect(th.set_pause)
-        store_controller.flag_end.connect(th.set_stop)
-        logger.signal_pause.connect(th.set_pause)
         widget.controls.buttons[0].clicked.connect(th.toggle_pause)
 
         widget.controls.buttons[1].clicked.connect(store_controller.terminateApp)
+        store_controller.flag_end.connect(th.set_stop)
 
         scores.change_score.connect(widget.plot.update_plot)
 
         window.kill_callback = lambda x: store_controller.terminateApp()
 
         # Execute application
-        print("Exec")
+        logging.info("[MAIN] Running main loop.")
 
         _excepthook = sys.excepthook
 
@@ -128,7 +128,7 @@ def main(args):
     finally:
         logging.info("[MAIN] Waiting for thread to terminate.")
         th.wait(2000)
-        print("Terminated")
+        logging.info("[MAIN] Terminated.")
         sys.exit(res)
 
 

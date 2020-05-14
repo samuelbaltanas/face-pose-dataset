@@ -5,7 +5,6 @@ from face_pose_dataset.model import storage
 
 class LoggingController(QtCore.QObject):
     change_layout = QtCore.Signal(str)
-    signal_pause = QtCore.Signal(bool)
     set_camera = QtCore.Signal(str)
 
     def __init__(self, widget, storage: storage.DatasetModel):
@@ -20,5 +19,4 @@ class LoggingController(QtCore.QObject):
         self.storage.add_identity(id)
 
         self.change_layout.emit("main")
-        self.signal_pause.emit(False)
         self.set_camera.emit(camera)

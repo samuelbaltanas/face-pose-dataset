@@ -22,7 +22,7 @@ class EstimationThread(QtCore.QThread):
         self.width = width
         self.height = height
         self.delay = delay
-        self.runs = True
+        self.is_terminated = False
         self.gpu = gpu
 
         self.mutex = QtCore.QMutex()
@@ -57,7 +57,7 @@ class EstimationThread(QtCore.QThread):
         # TODO: Brainstorm for solutions (slow fps on cpu)
         with self.camera() as cam:
             logging.info("[CAMERA] Camera started.")
-            while self.runs:
+            while self.isFinished():
                 bbox = None
                 start_time = time.time()
 
@@ -115,8 +115,12 @@ class EstimationThread(QtCore.QThread):
 
     @QtCore.Slot(bool)
     def set_stop(self, b: bool = True):
-        self.runs = b
+        logging.info("[CAMERA] Camera receives termination signal.")
+        self.is_terminated = b
         self.cond.wakeAll()
+
+    def isFinished(self) -> bool:
+        return not self.is_terminated
 
 
     @QtCore.Slot(str)
@@ -130,8 +134,7 @@ class EstimationThread(QtCore.QThread):
     def is_paused(self):
         """ Check if thread should be paused """
         # TODO Fix pause error in Windows.
-        return False
-        # return self._paused or self.camera is None
+        return self._paused or self.camera is None or not self.isFinished()
 
     def try_wake(self):
         """ Performs sanity check and wakes up thread if needed """
