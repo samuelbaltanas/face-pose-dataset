@@ -43,22 +43,20 @@ class EstimationThread(QtCore.QThread):
         # self.estimator = estimation.SklearnEstimator()
         # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
 
-        logging.debug("Estimator loaded.")
-
     def run(self):
-        logging.debug("Estimation thread starting.")
+        logging.info("[CAMERA] Estimation thread starting.")
         self.start_est()
         if self.camera is None:
-            logging.debug("Pausing thread.")
+            logging.debug("[CAMERA] Pausing thread.")
             self.cond.wait(self.mutex)
-            logging.debug("Resuming thread.")
+            logging.debug("[CAMERA] Resuming thread.")
 
         # DONE Fix error with opencv camera
         # SOL. Error in waiting condition for thread (wake before camera is set).
 
         # TODO: Brainstorm for solutions (slow fps on cpu)
         with self.camera() as cam:
-            logging.debug("Camera started.")
+            logging.info("[CAMERA] Camera started.")
             while self.runs:
                 bbox = None
                 start_time = time.time()
@@ -90,7 +88,7 @@ class EstimationThread(QtCore.QThread):
                     det = self.estimator.preprocess_image(frame, bbox)
                     ang = self.estimator.run(det)
 
-                    logging.debug("Sending angle %s .", ang)
+                    logging.debug("[CAMERA] Sending angle %s .", ang)
 
                     est = EstimationData(box=bbox, angle=ang, rgb=frame, depth=depth)
                     self.result_signal.emit(est)
@@ -102,6 +100,9 @@ class EstimationThread(QtCore.QThread):
                 if sleep_time > 0.0:
                     logging.debug("Estimation thread sleep for: %s", sleep_time)
                     time.sleep(sleep_time)
+
+            logging.info("[CAMERA] Camera shutting down.")
+            return
 
     def toggle_pause(self,):
         self._paused = not self._paused
@@ -115,7 +116,8 @@ class EstimationThread(QtCore.QThread):
     @QtCore.Slot(bool)
     def set_stop(self, b: bool):
         self.runs = not b
-        self.quit()
+        self.cond.wakeAll()
+
 
     @QtCore.Slot(str)
     def init_camera(self, camera_string):

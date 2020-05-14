@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import pickle
 from os import path
@@ -21,6 +22,7 @@ class AverageEstimator(interface.Estimator):
         )
 
         self.activation = activation
+        logging.info("[MULTI] Estimator loaded.")
 
     def preprocess_image(
         self, frame: np.ndarray, bbox: np.ndarray
