@@ -10,6 +10,7 @@ from PySide2.QtWidgets import QDialog
 
 _DEST_NAME = "faces_dataset"
 
+
 class Login(QtWidgets.QWidget):
     switch_window = QtCore.Signal(str, str, str)
 
@@ -91,9 +92,7 @@ class Login(QtWidgets.QWidget):
         res = self.validate_path(folder, iden)
         if res is not None:
             folder, iden = res
-            self.switch_window.emit(
-                folder, iden, self.camera_id
-            )
+            self.switch_window.emit(folder, iden, self.camera_id)
 
     def validate_path(self, root, id):
         dataset_dir = os.path.join(root, _DEST_NAME)
@@ -105,7 +104,9 @@ class Login(QtWidgets.QWidget):
         id_dir = os.path.join(dataset_dir, id)
 
         if os.path.isdir(id_dir):
-            msg = "The identity {} has already been saved. Do you want to continue? The previous data will be overriden.".format(id)
+            msg = "The identity {} has already been saved. Do you want to continue? The previous data will be overriden.".format(
+                id
+            )
             reply = QtWidgets.QMessageBox.question(
                 self,
                 "Message",
@@ -126,8 +127,6 @@ class Login(QtWidgets.QWidget):
             return dataset_dir, id
 
         logging.debug("Creating new folder: %s", self.id_path)
-
-
 
 
 _PERMISSION = (

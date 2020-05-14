@@ -25,7 +25,7 @@ __all__ = ["NnetWrapper", "NnetEnsemble"]
 def normalize_range(v: np.ndarray):
     """ Crop 9 vector into space """
     v[0::3] = v[0::3] / 180.0  # roll
-    v[1::3] = v[1::3] / 180.0 # pitch
+    v[1::3] = v[1::3] / 180.0  # pitch
     v[2::3] = v[2::3] / 180.0  # yaw
 
     return v
@@ -43,9 +43,7 @@ def inverse_norm(v: np.ndarray):
 class NnetEnsemble(pl.LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(
-            parents=[parent_parser], add_help=False
-        )
+        parser = argparse.ArgumentParser(parents=[parent_parser], add_help=False)
         parser.add_argument("--learning_rate", type=float, default=1e-4)
         parser.add_argument(
             "--activation",
@@ -62,14 +60,12 @@ class NnetEnsemble(pl.LightningModule):
             choices=["identity", "normalize"],
             default="identity",
         )
-        parser.add_argument(
-            "--loss", type=str, choices=["mse", "huber"], default="mse"
-        )
+        parser.add_argument("--loss", type=str, choices=["mse", "huber"], default="mse")
         parser.add_argument("--n_hidden_1", type=int, default=20)
         parser.add_argument("--n_hidden_2", type=int, default=20)
         return parser
 
-    def __init__(self, hparams, out_loss = 0):
+    def __init__(self, hparams, out_loss=0):
         super().__init__()
         # Hyperparameters loading
         self.hparams = hparams
@@ -90,13 +86,15 @@ class NnetEnsemble(pl.LightningModule):
         # Model definition
         if self.hparams.n_hidden_1 > 0:
             self.fc1 = nn.Linear(9, self.hparams.n_hidden_1)
-            torch.nn.init.constant_(self.fc1.weight, 180.)# 1/self.hparams.n_hidden_1)
+            torch.nn.init.constant_(
+                self.fc1.weight, 180.0
+            )  # 1/self.hparams.n_hidden_1)
             self.act1 = activation()
             if self.hparams.n_hidden_2 > 0:
-                self.fc2 = nn.Linear(
-                    self.hparams.n_hidden_1, self.hparams.n_hidden_2
-                )
-                torch.nn.init.constant_(self.fc2.weight, 180. )#  1/self.hparams.n_hidden_2)
+                self.fc2 = nn.Linear(self.hparams.n_hidden_1, self.hparams.n_hidden_2)
+                torch.nn.init.constant_(
+                    self.fc2.weight, 180.0
+                )  #  1/self.hparams.n_hidden_2)
                 self.act2 = activation()
                 self.fc3 = nn.Linear(self.hparams.n_hidden_2, out)
             else:
@@ -104,7 +102,7 @@ class NnetEnsemble(pl.LightningModule):
         else:
             self.fc3 = nn.Linear(9, out)
 
-        torch.nn.init.constant_(self.fc3.weight, 180.)
+        torch.nn.init.constant_(self.fc3.weight, 180.0)
 
     def forward(self, input: Any):
         x = input
@@ -113,7 +111,6 @@ class NnetEnsemble(pl.LightningModule):
             if self.hparams.n_hidden_2 > 0:
                 x = self.act2(self.fc2(x))
         x = self.fc3(x)
-
 
         if self.out_loss == 1:
             xx = x.clone()
@@ -131,17 +128,25 @@ class NnetEnsemble(pl.LightningModule):
 
         return r
 
-CHECKPOINT_ROOT = face_pose_dataset.PROJECT_ROOT.joinpath("data", "multi_classifier", "lightning_logs")
+
+CHECKPOINT_ROOT = face_pose_dataset.PROJECT_ROOT.joinpath(
+    "data", "multi_classifier", "lightning_logs"
+)
+
 
 class NnetWrapper(interface.Estimator):
     def __init__(self, checkpoint, out_loss=1):
         if isinstance(checkpoint, int):
-            checkpoint = list(CHECKPOINT_ROOT.joinpath("version_%d" % checkpoint, "checkpoints").glob("*.ckpt"))[0]
+            checkpoint = list(
+                CHECKPOINT_ROOT.joinpath("version_%d" % checkpoint, "checkpoints").glob(
+                    "*.ckpt"
+                )
+            )[0]
         elif isinstance(checkpoint, (str, pathlib.Path)):
             pass
         else:
             raise ValueError("Checkpoint must be an integer or represent a path.")
-        self.origin = AverageEstimator(activation='concat')
+        self.origin = AverageEstimator(activation="concat")
         self.model = NnetEnsemble.load_from_checkpoint(checkpoint, out_loss=out_loss)
         self.model.eval()
 
@@ -156,4 +161,3 @@ class NnetWrapper(interface.Estimator):
             res = torch.from_numpy(res).float()
             pred = self.model.forward(res)[0].numpy()
         return core.Angle(*pred)
-

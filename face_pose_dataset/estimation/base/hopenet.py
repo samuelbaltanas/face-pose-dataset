@@ -1,3 +1,4 @@
+import logging
 from os import path
 from typing import Tuple
 
@@ -22,19 +23,22 @@ __all__ = ["HopenetEstimator"]
 
 
 MODEL_PATH = pkg_resources.resource_stream(
-                "face_pose_dataset", "data/hopenet/hopenet_alpha1.pkl")
+    "face_pose_dataset", "data/hopenet/hopenet_alpha1.pkl"
+)
 
 
 class HopenetEstimator(interface.Estimator):
     def __init__(
-        self, snapshot_path=MODEL_PATH, gpu=0,
+        self, snapshot_path=MODEL_PATH, gpu=-1,
     ):
-
+        logging.debug("[HOPENET] Loading...")
         # Gpu and cpu compatibility as per Pytorch guidelines in:
         # https://pytorch.org/docs/stable/notes/cuda.html#device-agnostic-code
-        self.device = torch.device(
-            "cuda:{}".format(gpu) if torch.cuda.is_available() else "cpu"
-        )
+        if torch.cuda.is_available() and gpu >= 0:
+            self.device = torch.device("cuda:{}".format(gpu))
+        else:
+            self.device = torch.device("cpu")
+        logging.info("[HOPENET] Running on device %s", self.device)
 
         # ResNet50 structure
         self.model = hopenet.Hopenet(
@@ -42,14 +46,14 @@ class HopenetEstimator(interface.Estimator):
         )
         self.model.to(self.device)
 
-        print("Loading snapshot.")
+        logging.info("[HOPENET] Loading snapshot...")
         # Load snapshot
         saved_state_dict = torch.load(snapshot_path, map_location=self.device)
         self.model.load_state_dict(saved_state_dict)
 
         self.transformations = transforms.Compose(
             [
-                transforms.Scale(224),
+                transforms.Resize(224),
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 transforms.Normalize(
@@ -63,6 +67,7 @@ class HopenetEstimator(interface.Estimator):
 
         self.idx_tensor = list(range(66))
         self.idx_tensor = torch.FloatTensor(self.idx_tensor).to(self.device)
+        logging.info("[HOPENET] Loaded.")
 
     def preprocess_image(self, frame, bbox):
         res = mtcnn.extract_face(

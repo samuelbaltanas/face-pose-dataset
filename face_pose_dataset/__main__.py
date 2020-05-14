@@ -1,3 +1,4 @@
+import argparse
 import logging
 import sys
 
@@ -5,7 +6,7 @@ from PySide2 import QtCore, QtWidgets
 
 from face_pose_dataset.controller import estimation, logging_controller, storage_control
 from face_pose_dataset.model import score, storage
-from face_pose_dataset.view import login, main
+from face_pose_dataset.view import login, main_view
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -23,7 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def change_layout(self, key: str):
         lay = self.layouts[key]
         self.setCentralWidget(lay[0])
-        window.resize(*lay[1])
+        self.resize(*lay[1])
         self.show()
 
     def closeEvent(self, event):
@@ -45,9 +46,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 event.ignore()
 
 
-if __name__ == "__main__":
-    logging.getLogger().setLevel(logging.DEBUG)
+def main(args):
+    if args.quiet:
+        logging.getLogger().setLevel(logging.ERROR)
+    elif args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
     app = QtWidgets.QApplication(sys.argv)
+
+    logging.info(args)
 
     dims = 7, 7
     yaw_range = -65.0, 65.0
@@ -67,7 +75,7 @@ if __name__ == "__main__":
     window.change_layout("login")
 
     # Central widget
-    widget = main.MainWidget(scores)
+    widget = main_view.MainWidget(scores)
     window.register_layout("main", widget, (1200, 720))
 
     # CONTROLLERS
@@ -77,11 +85,15 @@ if __name__ == "__main__":
     logger = logging_controller.LoggingController(login_widget, store)
     logger.change_layout.connect(window.change_layout)
 
-    th = estimation.EstimationThread(800, 600)
+    if args.force_cpu:
+        gpu = -1
+    else:
+        gpu = 0
+
+    th = estimation.EstimationThread(800, 600, gpu=gpu)
     th.video_feed.connect(widget.video.set_image)
     th.result_signal.connect(store_controller.process)
-    #th.setTerminationEnabled(True)
-
+    # th.setTerminationEnabled(True)
 
     login_widget.switch_window.connect(logger.access)
     logger.set_camera.connect(th.init_camera)
@@ -100,11 +112,11 @@ if __name__ == "__main__":
     # Execute application
     print("Exec")
 
-    sys._excepthook = sys.excepthook
+    _excepthook = sys.excepthook
 
     def exception_hook(exctype, value, traceback):
         print(exctype, value, traceback)
-        sys._excepthook(exctype, value, traceback)
+        _excepthook(exctype, value, traceback)
         sys.exit(-1)
 
     sys.excepthook = exception_hook
@@ -113,3 +125,22 @@ if __name__ == "__main__":
     print("Terminated")
     sys.exit(res)
 
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--force-cpu",
+        action="store_true",
+        help="Forces the estimator to use a CPU. When not set, it searches for any available GPU.",
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-v", "--verbose", action="store_true")
+    group.add_argument("-q", "--quiet", action="store_true")
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)

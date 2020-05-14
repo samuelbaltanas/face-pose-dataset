@@ -26,7 +26,7 @@ def heatmap(
     value_range,
     ax=None,
     label_format="%.2f",
-    cbar_kw={"fraction" : 0.046, "pad" :0.04},
+    cbar_kw={"fraction": 0.046, "pad": 0.04},
     cbarlabel="",
     **kwargs
 ):
@@ -134,7 +134,7 @@ class MatplotlibWidget(QWidget):
         self.storage = storage
 
         self.pointer = self.ax.scatter(
-            x=[3.3], y=[3.3], color="r", marker=marker(), s=150
+            x=[3.3], y=[3.3], color="black", marker=marker(), s=150
         )
 
         fig.tight_layout()

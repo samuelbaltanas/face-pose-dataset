@@ -209,8 +209,7 @@ def test_net():
 
 
 def generate_models(
-    model_root,
-    save=False,
+    model_root, save=False,
 ):
     pnet = load_nnet(
         PNet,

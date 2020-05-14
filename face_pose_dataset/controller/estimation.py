@@ -17,17 +17,20 @@ class EstimationThread(QtCore.QThread):
     video_feed = QtCore.Signal(Image)
     result_signal = QtCore.Signal(EstimationData)
 
-    def __init__(self, width=640, height=480, delay=1 / 20):
+    def __init__(self, width=640, height=480, delay=1 / 20, gpu=0):
         super().__init__()
         self.width = width
         self.height = height
         self.delay = delay
         self.runs = True
+        self.gpu = gpu
 
         self.mutex = QtCore.QMutex()
         self.cond = QtCore.QWaitCondition()
         self._paused = True
         self.camera = None
+        self.detector = None
+        self.estimator = None
 
     def start_est(self):
         # Face pose estimation
@@ -36,7 +39,7 @@ class EstimationThread(QtCore.QThread):
         # self.estimator = estimation.HopenetEstimator()
         # self.estimator = estimation.DdfaEstimator()
         # self.estimator = estimation.FSAEstimator()
-        self.estimator = estimation.AverageEstimator()
+        self.estimator = estimation.AverageEstimator(gpu=self.gpu)
         # self.estimator = estimation.SklearnEstimator()
         # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
 

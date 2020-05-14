@@ -4,6 +4,7 @@ from typing import Tuple
 
 import cv2
 import numpy as np
+import pkg_resources
 import tensorflow.compat.v1 as tf
 from tensorflow.keras.layers import Average
 
@@ -11,7 +12,6 @@ import face_pose_dataset as fpdata
 from face_pose_dataset import core
 from face_pose_dataset.estimation import interface, mtcnn
 from face_pose_dataset.third_party.fsa_estimator import FSANET_model
-import pkg_resources
 
 # tf.disable_v2_behavior()
 
@@ -100,7 +100,7 @@ def extract_faces(
 
 
 class FSAEstimator(interface.Estimator):
-    def __init__(self):
+    def __init__(self, use_gpu=False):
         self.img_size = 64, 64
 
         # Parameters
@@ -114,8 +114,21 @@ class FSAEstimator(interface.Estimator):
         m_dim = 5
         s_set = [num_capsule, dim_capsule, routings, num_primcaps, m_dim]
 
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
+        gpus_available = tf.config.list_physical_devices(device_type="GPU")
+
+        logging.info("[FSANET] GPUs available: %s.", gpus_available)
+        if use_gpu and gpus_available:
+            config = tf.ConfigProto(
+                log_device_placement=logging.getLogger().level < logging.INFO
+            )
+            config.gpu_options.allow_growth = True
+            logging.info("[FSANET] Set on GPU.")
+        else:
+            config = tf.ConfigProto(
+                log_device_placement=logging.getLogger().level < logging.INFO,
+                device_count={"CPU": 1, "GPU": 0},
+            )
+            logging.info("[FSANET] Set on CPU.")
         self.session = tf.InteractiveSession(config=config)
 
         tf.compat.v1.keras.backend.set_session(self.session)
@@ -135,28 +148,28 @@ class FSAEstimator(interface.Estimator):
                 self.img_size[0], num_classes, stage_num, lambda_d, s_set
             )()
 
-            logging.debug("Loading data ...")
+            logging.info("[FSANET] Loading data ...")
 
             weight_file1 = pkg_resources.resource_filename(
                 "face_pose_dataset",
                 "data/FSA_300W_LP_model/fsanet_capsule_3_16_2_21_5/fsanet_capsule_3_16_2_21_5.h5",
             )
             model1.load_weights(weight_file1)
-            logging.debug("Finished loading model 1.")
+            logging.info("[FSANET] Model 1 loaded.")
 
             weight_file2 = pkg_resources.resource_filename(
                 "face_pose_dataset",
                 "data/FSA_300W_LP_model/fsanet_var_capsule_3_16_2_21_5/fsanet_var_capsule_3_16_2_21_5.h5",
             )
             model2.load_weights(weight_file2)
-            logging.debug("Finished loading model 2.")
+            logging.info("[FSANET] Model 2 loaded.")
 
             weight_file3 = pkg_resources.resource_filename(
                 "face_pose_dataset",
                 "data/FSA_300W_LP_model/fsanet_noS_capsule_3_16_2_192_5/fsanet_noS_capsule_3_16_2_192_5.h5",
             )
             model3.load_weights(weight_file3)
-            logging.debug("Finished loading model 3.")
+            logging.info("[FSANET] Model 3 loaded.")
 
             inputs = FSANET_model.Input(shape=(*self.img_size, 3))
             x1 = model1(inputs)  # 1x1
@@ -165,6 +178,8 @@ class FSAEstimator(interface.Estimator):
             avg_model = Average()([x1, x2, x3])
 
             self.model = FSANET_model.Model(inputs=inputs, outputs=avg_model)
+
+            logging.info("[FSANET] Loaded.")
 
     def preprocess_image(self, frame: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         # DONE Test 0.4 margin instead of 0.6

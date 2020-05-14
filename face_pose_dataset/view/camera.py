@@ -37,7 +37,8 @@ class VideoWidget(QtWidgets.QWidget):
     def _init_ui(self):
         # Create a label
         self.label = QtWidgets.QLabel(self)
-        self.label.resize(self.width, self.height)
+        # self.label.resize(self.width, self.height)
+        self.label.setScaledContents(True)
 
         # QWidget Layout
         self.layout = QtWidgets.QHBoxLayout()

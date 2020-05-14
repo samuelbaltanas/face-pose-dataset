@@ -1,7 +1,9 @@
+import logging
 from os import path
 
 import cv2
 import numpy as np
+import pkg_resources
 import torch
 import torch.backends.cudnn as cudnn
 from torchvision import transforms
@@ -11,7 +13,6 @@ from face_pose_dataset import core
 from face_pose_dataset.estimation import interface
 from face_pose_dataset.third_party.ddfa.mobilenet_v1 import mobilenet_1 as mobilenet
 from face_pose_dataset.third_party.ddfa.utils import estimate_pose, inference
-import pkg_resources
 
 __all__ = ["DdfaEstimator"]
 
@@ -20,7 +21,9 @@ __all__ = ["DdfaEstimator"]
 #     fpdata.PROJECT_ROOT, "data", "3ddfa-configs", "phase1_wpdc_vdc.pth.tar"
 # )
 
-MODEL_PATH = pkg_resources.resource_stream("face_pose_dataset", "data/3ddfa-configs/phase1_wpdc_vdc.pth.tar")
+MODEL_PATH = pkg_resources.resource_stream(
+    "face_pose_dataset", "data/3ddfa-configs/phase1_wpdc_vdc.pth.tar"
+)
 
 if torch.cuda.is_available():
     cudnn.benchmark = True  # type: ignore
@@ -28,14 +31,16 @@ if torch.cuda.is_available():
 
 class DdfaEstimator(interface.Estimator):
     def __init__(
-        self, checkpoint=MODEL_PATH, gpu=0,
+        self, checkpoint=MODEL_PATH, gpu=-1,
     ):
+        logging.debug("[3DDFA] Loading...")
         # Gpu and cpu compatibility as per Pytorch guidelines in:
         # https://pytorch.org/docs/stable/notes/cuda.html#device-agnostic-code
         self.device = torch.device(
-            "cuda:{}".format(gpu) if torch.cuda.is_available() else "cpu"
+            "cuda:{}".format(gpu) if torch.cuda.is_available() and gpu >= 0 else "cpu"
         )
-
+        logging.info("[3DDFA] Running on device %s", self.device)
+        logging.info("[3DDFA] Loading snapshot...")
         self.checkpoint = torch.load(
             checkpoint, map_location=lambda storage, loc: storage
         )["state_dict"]
@@ -69,6 +74,7 @@ class DdfaEstimator(interface.Estimator):
         )
 
         self.gpu = gpu
+        logging.info("[3DDFA] Loaded.")
 
     def preprocess_image(self, frame: np.ndarray, bbox: np.ndarray) -> np.ndarray:
         roi_box = inference.parse_roi_box_from_bbox(bbox)

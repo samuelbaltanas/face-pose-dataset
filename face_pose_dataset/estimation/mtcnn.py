@@ -21,7 +21,8 @@ _FEATURE_TRANSFORM = np.array(
 )
 
 MODEL_PATH = pkg_resources.resource_filename(
-                "face_pose_dataset", "data/mtcnn_tensorflow/")
+    "face_pose_dataset", "data/mtcnn_tensorflow/"
+)
 
 Margin = Union[int, float]
 MarginDescriptor = Union[

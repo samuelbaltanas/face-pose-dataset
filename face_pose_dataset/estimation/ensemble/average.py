@@ -13,11 +13,11 @@ __all__ = ["AverageEstimator", "SklearnEstimator"]
 
 
 class AverageEstimator(interface.Estimator):
-    def __init__(self, activation="mean"):
+    def __init__(self, gpu=0, activation="mean"):
         self.estimators = (
-            hopenet.HopenetEstimator(),
-            ddfa.DdfaEstimator(),
-            fsanet.FSAEstimator(),
+            hopenet.HopenetEstimator(gpu=gpu),
+            ddfa.DdfaEstimator(gpu=gpu),
+            fsanet.FSAEstimator(use_gpu=gpu >= 0),
         )
 
         self.activation = activation
@@ -45,12 +45,12 @@ class AverageEstimator(interface.Estimator):
             return r
 
 
-
-
 class SklearnEstimator(interface.Estimator):
-    def __init__(self, method = ""):
-        self.origin = AverageEstimator(activation='concat')
-        MODEL_ROOT = pathlib.Path("/home/sam/Workspace/projects/5-ImageGathering/face_pose_estimation/data/sklearn/biwi")
+    def __init__(self, method=""):
+        self.origin = AverageEstimator(activation="concat")
+        MODEL_ROOT = pathlib.Path(
+            "/home/sam/Workspace/projects/5-ImageGathering/face_pose_estimation/data/sklearn/biwi"
+        )
         with open(MODEL_ROOT.joinpath("best-linear_svm.pkl"), "rb") as f:
             self.est = pickle.load(f)
 
