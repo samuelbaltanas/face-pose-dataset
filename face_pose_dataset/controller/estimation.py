@@ -129,7 +129,9 @@ class EstimationThread(QtCore.QThread):
     @property
     def is_paused(self):
         """ Check if thread should be paused """
-        return self._paused or self.camera is None
+        # TODO Fix pause error in Windows.
+        return False
+        # return self._paused or self.camera is None
 
     def try_wake(self):
         """ Performs sanity check and wakes up thread if needed """
