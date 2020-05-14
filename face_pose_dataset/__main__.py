@@ -47,83 +47,89 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 def main(args):
-    if args.quiet:
-        logging.getLogger().setLevel(logging.ERROR)
-    elif args.verbose:
-        logging.getLogger().setLevel(logging.DEBUG)
-    else:
-        logging.getLogger().setLevel(logging.INFO)
-    app = QtWidgets.QApplication(sys.argv)
+    try:
+        if args.quiet:
+            logging.getLogger().setLevel(logging.ERROR)
+        elif args.verbose:
+            logging.getLogger().setLevel(logging.DEBUG)
+        else:
+            logging.getLogger().setLevel(logging.INFO)
+        app = QtWidgets.QApplication(sys.argv)
 
-    logging.info(args)
+        logging.info(args)
 
-    dims = 7, 7
-    yaw_range = -65.0, 65.0
-    pitch_range = -35.0, 35.0
+        dims = 7, 7
+        yaw_range = -65.0, 65.0
+        pitch_range = -35.0, 35.0
 
-    # MODELS
-    scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)
+        # MODELS
+        scores = score.ScoreModel(dims, pitch_range=pitch_range, yaw_range=yaw_range)
 
-    store = storage.DatasetModel(shape=dims)
+        store = storage.DatasetModel(shape=dims)
 
-    # VIEW
-    window = MainWindow()
-    window.resize(600, 360)
-    login_widget = login.Login()
+        # VIEW
+        window = MainWindow()
+        window.resize(600, 360)
+        login_widget = login.Login()
 
-    window.register_layout("login", login_widget)
-    window.change_layout("login")
+        window.register_layout("login", login_widget)
+        window.change_layout("login")
 
-    # Central widget
-    widget = main_view.MainWidget(scores)
-    window.register_layout("main", widget, (1200, 720))
+        # Central widget
+        widget = main_view.MainWidget(scores)
+        window.register_layout("main", widget, (1200, 720))
 
-    # CONTROLLERS
-    store_controller = storage_control.StorageController(app, scores, store)
-    store_controller.change_pos.connect(widget.plot.update_pointer)
+        # CONTROLLERS
+        store_controller = storage_control.StorageController(app, scores, store)
+        store_controller.change_pos.connect(widget.plot.update_pointer)
 
-    logger = logging_controller.LoggingController(login_widget, store)
-    logger.change_layout.connect(window.change_layout)
+        logger = logging_controller.LoggingController(login_widget, store)
+        logger.change_layout.connect(window.change_layout)
 
-    if args.force_cpu:
-        gpu = -1
-    else:
-        gpu = 0
+        if args.force_cpu:
+            gpu = -1
+        else:
+            gpu = 0
 
-    th = estimation.EstimationThread(800, 600, gpu=gpu)
-    th.video_feed.connect(widget.video.set_image)
-    th.result_signal.connect(store_controller.process)
-    # th.setTerminationEnabled(True)
+        th = estimation.EstimationThread(800, 600, gpu=gpu)
+        th.video_feed.connect(widget.video.set_image)
+        th.result_signal.connect(store_controller.process)
+        # th.setTerminationEnabled(True)
 
-    login_widget.switch_window.connect(logger.access)
-    logger.set_camera.connect(th.init_camera)
+        login_widget.switch_window.connect(logger.access)
+        logger.set_camera.connect(th.init_camera)
 
-    store_controller.flag_pause.connect(th.set_pause)
-    store_controller.flag_end.connect(th.set_stop)
-    logger.signal_pause.connect(th.set_pause)
-    widget.controls.buttons[0].clicked.connect(th.toggle_pause)
+        store_controller.flag_pause.connect(th.set_pause)
+        store_controller.flag_end.connect(th.set_stop)
+        logger.signal_pause.connect(th.set_pause)
+        widget.controls.buttons[0].clicked.connect(th.toggle_pause)
 
-    widget.controls.buttons[1].clicked.connect(store_controller.terminateApp)
+        widget.controls.buttons[1].clicked.connect(store_controller.terminateApp)
 
-    scores.change_score.connect(widget.plot.update_plot)
+        scores.change_score.connect(widget.plot.update_plot)
 
-    window.kill_callback = lambda x: store_controller.terminateApp()
+        window.kill_callback = lambda x: store_controller.terminateApp()
 
-    # Execute application
-    print("Exec")
+        # Execute application
+        print("Exec")
 
-    _excepthook = sys.excepthook
+        _excepthook = sys.excepthook
 
-    def exception_hook(exctype, value, traceback):
-        print(exctype, value, traceback)
-        _excepthook(exctype, value, traceback)
-        sys.exit(-1)
+        def exception_hook(exctype, value, traceback):
+            print(exctype, value, traceback)
+            _excepthook(exctype, value, traceback)
+            sys.exit(-1)
 
-    sys.excepthook = exception_hook
-    th.start()
-    res = app.exec_()
-    print("Terminated")
-    sys.exit(res)
+        sys.excepthook = exception_hook
+        th.start()
+        res = app.exec_()
+    except Exception as e:
+        logging.error(e)
+    finally:
+        logging.info("[MAIN] Waiting for thread to terminate.")
+        th.wait(2000)
+        print("Terminated")
+        sys.exit(res)
 
 
 def parse_args():

@@ -119,13 +119,13 @@ class FSAEstimator(interface.Estimator):
         logging.info("[FSANET] GPUs available: %s.", gpus_available)
         if use_gpu and gpus_available:
             config = tf.ConfigProto(
-                log_device_placement=logging.getLogger().level < logging.INFO
+                log_device_placement=False,  # logging.getLogger().level < logging.INFO
             )
             config.gpu_options.allow_growth = True
             logging.info("[FSANET] Set on GPU.")
         else:
             config = tf.ConfigProto(
-                log_device_placement=logging.getLogger().level < logging.INFO,
+                log_device_placement=False,  # logging.getLogger().level < logging.INFO,
                 device_count={"CPU": 1, "GPU": 0},
             )
             logging.info("[FSANET] Set on CPU.")

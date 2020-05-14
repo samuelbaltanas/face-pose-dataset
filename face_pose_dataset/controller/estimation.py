@@ -114,8 +114,8 @@ class EstimationThread(QtCore.QThread):
         self.try_wake()
 
     @QtCore.Slot(bool)
-    def set_stop(self, b: bool):
-        self.runs = not b
+    def set_stop(self, b: bool = True):
+        self.runs = b
         self.cond.wakeAll()
 
 
