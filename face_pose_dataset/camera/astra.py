@@ -109,7 +109,7 @@ class AstraCamera:
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self,):
         if self.video_stream is not None:
             self.video_stream.stop()
         else:

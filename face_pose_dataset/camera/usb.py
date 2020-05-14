@@ -14,7 +14,7 @@ class VideoCamera(object):
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self):
         self.video.release()
         self.video = None
 

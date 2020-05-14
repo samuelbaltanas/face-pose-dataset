@@ -2,6 +2,7 @@ import logging
 
 from PySide2 import QtCore
 from PySide2.QtWidgets import QMessageBox
+from qtpy import QtWidgets
 
 from face_pose_dataset.core import EstimationData
 from face_pose_dataset.model import score, storage
@@ -12,11 +13,10 @@ class StorageController(QtCore.QObject):
     flag_pause = QtCore.Signal(bool)
     flag_end = QtCore.Signal(bool)
 
-    def __init__(self, app, scores: score.ScoreModel, storage: storage.DatasetModel):
+    def __init__(self, scores: score.ScoreModel, storage: storage.DatasetModel):
         super().__init__()
         self.scores = scores
         self.storage = storage
-        self.app = app
 
     @QtCore.Slot(EstimationData)
     def process(self, data: EstimationData):
@@ -44,6 +44,6 @@ class StorageController(QtCore.QObject):
             self.storage.dump_data()
             logging.debug("Quitting application")
             self.flag_end.emit(True)
-            self.app.quit()
+            QtWidgets.QApplication.instance().quit()
         elif ret == QMessageBox.Cancel:
             self.flag_pause.emit(False)

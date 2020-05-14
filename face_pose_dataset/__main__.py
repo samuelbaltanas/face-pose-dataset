@@ -81,8 +81,9 @@ def main(args):
         window.register_layout("main", widget, (1200, 720))
 
         # CONTROLLERS
-        store_controller = storage_control.StorageController(app, scores, store)
+        store_controller = storage_control.StorageController(scores, store)
         store_controller.change_pos.connect(widget.plot.update_pointer)
+
 
         logger = logging_controller.LoggingController(login_widget, store)
         logger.change_layout.connect(window.change_layout)
@@ -92,9 +93,9 @@ def main(args):
         else:
             gpu = 0
 
-        th = estimation.EstimationThread(800, 600, gpu=gpu)
+        th = estimation.EstimationThread(gpu=gpu)
         th.video_feed.connect(widget.video.set_image)
-        th.result_signal.connect(store_controller.process)
+        th.worker.result_signal.connect(store_controller.process)
         # th.setTerminationEnabled(True)
 
         login_widget.switch_window.connect(logger.access)
@@ -121,13 +122,11 @@ def main(args):
             sys.exit(-1)
 
         sys.excepthook = exception_hook
-        th.start()
+        # th.start()
         res = app.exec_()
-    except Exception as e:
-        logging.error(e)
     finally:
         logging.info("[MAIN] Waiting for thread to terminate.")
-        th.wait(2000)
+        # th.wait(2000)
         logging.info("[MAIN] Terminated.")
         sys.exit(res)
 
