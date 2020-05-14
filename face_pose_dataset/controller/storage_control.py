@@ -2,7 +2,7 @@ import logging
 
 from PySide2 import QtCore
 from PySide2.QtWidgets import QMessageBox
-from qtpy import QtWidgets
+from PySide2 import QtWidgets
 
 from face_pose_dataset.core import EstimationData
 from face_pose_dataset.model import score, storage
