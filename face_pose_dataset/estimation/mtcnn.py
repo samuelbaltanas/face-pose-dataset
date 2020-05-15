@@ -1,3 +1,4 @@
+import logging
 from os import path
 from typing import List, Optional, Tuple, Union
 
@@ -5,6 +6,7 @@ import cv2
 import numpy as np
 import pkg_resources
 from skimage import transform as trans
+import tensorflow as tf
 
 import face_pose_dataset as fpdata
 from face_pose_dataset.third_party.mtcnn_sandberg import mtcnn_keras, mtcnn_tensorflow
@@ -194,11 +196,12 @@ class MTCNN:
     factor = 0.709
 
     def __init__(
-        self, model_root=MODEL_PATH,
+        self, model_root=MODEL_PATH, gpu=0
     ):
         # DONE: Changes to work with tensorflow v2
-
+        logging.info("[MTCNN] Loading.")
         self.pnet, self.rnet, self.onet = mtcnn_keras.generate_models(model_root, False)
+        logging.info("[MTCNN] Loaded.")
 
     def run(
         self, image: np.ndarray, threshold=0.5,

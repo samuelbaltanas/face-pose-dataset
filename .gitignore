@@ -1,7 +1,9 @@
 data
 notebooks
 reports
+__pycache__
 
+.directory
 .idea
 .mypy_cache
 .pytest_cache

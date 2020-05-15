@@ -3,9 +3,11 @@ import time
 
 import numpy as np
 from PySide2 import QtCore
+import tensorflow as tf
 
 from face_pose_dataset import camera, estimation
 from face_pose_dataset.core import EstimationData, Image
+
 
 COMPATIBLE_CAMERAS = {
     "astra": camera.AstraCamera,
@@ -30,9 +32,37 @@ class EstimationWorker(QtCore.QObject):
     @QtCore.Slot()
     def start_est(self):
         logging.debug("[EST] Loading estimators")
+
+        gpus_available = tf.config.list_physical_devices(device_type="GPU")
+
+        logging.info("[EST] GPUs available: %s.", gpus_available)
+        if self.gpu >= 0 and gpus_available:
+
+            for gpu in gpus_available:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices("GPU")
+            print(len(gpus_available), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+
+            config = tf.compat.v1.ConfigProto(
+                # log_device_placement=logging.getLogger().level < logging.INFO
+            )
+            config.gpu_options.allow_growth = True
+            logging.info("[EST] Set on GPU.")
+        else:
+            config = tf.compat.v1.ConfigProto(
+                # log_device_placement=logging.getLogger().level < logging.INFO,
+                device_count={"CPU": 1, "GPU": 0},
+            )
+            logging.info("[EST] Set on CPU.")
+
+        self.session = tf.compat.v1.InteractiveSession(config=config)
+
+        tf.compat.v1.keras.backend.set_session(self.session)
+
+
         # Face pose estimation
         # self.detector = estimation.SSDDetector()
-        self.detector = estimation.MTCNN()
+        self.detector = estimation.MTCNN(gpu=self.gpu)
         # self.estimator = estimation.HopenetEstimator()
         # self.estimator = estimation.DdfaEstimator()
         # self.estimator = estimation.FSAEstimator()
@@ -54,7 +84,7 @@ class EstimationWorker(QtCore.QObject):
             if len(res[0]) > 1:
                 bboxes = np.array(res[0])[:, :4]
                 frame_center = np.array(frame.shape)[:2][::-1] // 2
-                boxes_center = bboxes[:, :2] + bboxes[:, 2:]// 2
+                boxes_center = bboxes[:, :2] + bboxes[:, 2:] // 2
                 idx = np.argmin(
                     np.sum(np.abs(boxes_center - frame_center), axis=1)
                 )

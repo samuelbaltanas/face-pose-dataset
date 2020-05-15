@@ -100,7 +100,7 @@ def extract_faces(
 
 
 class FSAEstimator(interface.Estimator):
-    def __init__(self, use_gpu=False):
+    def __init__(self, use_gpu):
         self.img_size = 64, 64
 
         # Parameters
@@ -114,24 +114,6 @@ class FSAEstimator(interface.Estimator):
         m_dim = 5
         s_set = [num_capsule, dim_capsule, routings, num_primcaps, m_dim]
 
-        gpus_available = tf.config.list_physical_devices(device_type="GPU")
-
-        logging.info("[FSANET] GPUs available: %s.", gpus_available)
-        if use_gpu and gpus_available:
-            config = tf.ConfigProto(
-                log_device_placement=False,  # logging.getLogger().level < logging.INFO
-            )
-            config.gpu_options.allow_growth = True
-            logging.info("[FSANET] Set on GPU.")
-        else:
-            config = tf.ConfigProto(
-                log_device_placement=False,  # logging.getLogger().level < logging.INFO,
-                device_count={"CPU": 1, "GPU": 0},
-            )
-            logging.info("[FSANET] Set on CPU.")
-        self.session = tf.InteractiveSession(config=config)
-
-        tf.compat.v1.keras.backend.set_session(self.session)
         self.graph = tf.get_default_graph()
         with self.graph.as_default():
             model1 = FSANET_model.FSA_net_Capsule(
@@ -190,7 +172,6 @@ class FSAEstimator(interface.Estimator):
 
     def run(self, input_images: np.ndarray) -> np.ndarray:
         with self.graph.as_default():
-            tf.keras.backend.set_session(self.session)
             yaw, pitch, roll = self.model.predict(input_images)[0]
             ang = core.Angle(yaw=yaw, pitch=pitch, roll=-roll)
         return ang

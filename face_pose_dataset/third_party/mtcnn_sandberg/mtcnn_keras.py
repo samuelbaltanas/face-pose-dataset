@@ -26,24 +26,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers, models
-from tensorflow.python.framework.ops import disable_eager_execution
 
 # disable_eager_execution()
-
-# REF: https://www.tensorflow.org/guide/gpu#allowing_gpu_memory_growth
-gpus = tf.config.experimental.list_physical_devices("GPU")
-
-if gpus:
-    try:
-        # Currently, memory growth needs to be the same across GPUs
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.experimental.list_logical_devices("GPU")
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-    except RuntimeError as e:
-        # Memory growth must be set before GPUs have been initialized
-        print(e)
-
 
 conv_group = 1
 
@@ -148,7 +132,7 @@ def ONet(input_shape=[48, 48, 3]):
 
 
 def load_nnet(model_func: Callable, in_file: str, out_file: Optional[str] = None):
-    data_dict: dict = np.load(in_file, encoding="latin1", allow_pickle=True).item()
+    data_dict = np.load(in_file, encoding="latin1", allow_pickle=True).item()
     model: models.Model = model_func()
 
     for key, value in data_dict.items():
@@ -209,7 +193,7 @@ def test_net():
 
 
 def generate_models(
-    model_root, save=False,
+    model_root: str, save=False,
 ):
     pnet = load_nnet(
         PNet,
