@@ -1,9 +1,9 @@
 # flake8: noqa
 
+from .mtcnn import *
 from .base import *
 from .ensemble import *
 from .interface import *
-from .mtcnn import *
 
 ESTIMATORS = {
     "ddfa": DdfaEstimator,

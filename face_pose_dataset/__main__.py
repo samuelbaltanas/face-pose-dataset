@@ -56,6 +56,7 @@ def main(args):
         logging.info(args)
 
         if args.force_cpu:
+            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
             os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
         else:
             os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'

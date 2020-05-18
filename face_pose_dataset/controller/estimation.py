@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 import traceback
 
@@ -46,6 +47,7 @@ class EstimationWorker(QtCore.QObject):
         except Exception as e:
             track = traceback.format_exc()
             logging.error(track)
+            sys.exit(-1)
 
     @QtCore.Slot(tuple)
     def run(self, frames: tuple):
@@ -80,6 +82,7 @@ class EstimationWorker(QtCore.QObject):
         except Exception as e:
             track = traceback.format_exc()
             logging.error(track)
+            sys.exit(-1)
 
 
 
