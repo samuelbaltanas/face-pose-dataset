@@ -117,7 +117,7 @@ class FSAEstimator(interface.Estimator):
         gpus_available = tf.config.list_physical_devices(device_type="GPU")
 
         logging.info("[FSANET] GPUs available: %s.", gpus_available)
-        if use_gpu and gpus_available:
+        if gpus_available:
             config = tf.ConfigProto(
                 log_device_placement=False,  # logging.getLogger().level < logging.INFO
             )

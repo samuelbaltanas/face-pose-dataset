@@ -1,12 +1,9 @@
 import argparse
 import logging
+import os
 import sys
 
 from PySide2 import QtCore, QtWidgets
-
-from face_pose_dataset.controller import estimation, logging_controller, storage_control
-from face_pose_dataset.model import score, storage
-from face_pose_dataset.view import login, main_view
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -57,6 +54,15 @@ def main(args):
         app = QtWidgets.QApplication(sys.argv)
 
         logging.info(args)
+
+        if args.force_cpu:
+            os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+        else:
+            os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
+        from face_pose_dataset.controller import estimation, logging_controller, storage_control
+        from face_pose_dataset.model import score, storage
+        from face_pose_dataset.view import login, main_view
 
         # PARAMS
         dims = 7, 7
