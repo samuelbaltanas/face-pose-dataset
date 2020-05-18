@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 
 import numpy as np
 from PySide2 import QtCore
@@ -29,48 +30,56 @@ class EstimationWorker(QtCore.QObject):
 
     @QtCore.Slot()
     def start_est(self):
-        logging.debug("[EST] Loading estimators")
-        # Face pose estimation
-        # self.detector = estimation.SSDDetector()
-        self.detector = estimation.MTCNN()
-        # self.estimator = estimation.HopenetEstimator()
-        # self.estimator = estimation.DdfaEstimator()
-        # self.estimator = estimation.FSAEstimator()
-        self.estimator = estimation.AverageEstimator(gpu=self.gpu)
-        # self.estimator = estimation.SklearnEstimator()
-        # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
-        self.signal_prepared.emit()
-        logging.debug("[EST] Estimators loaded")
+        try:
+            logging.debug("[EST] Loading estimators")
+            # Face pose estimation
+            # self.detector = estimation.SSDDetector()
+            self.detector = estimation.MTCNN()
+            # self.estimator = estimation.HopenetEstimator()
+            # self.estimator = estimation.DdfaEstimator()
+            # self.estimator = estimation.FSAEstimator()
+            self.estimator = estimation.AverageEstimator(gpu=self.gpu)
+            # self.estimator = estimation.SklearnEstimator()
+            # self.estimator = estimation.NnetWrapper(checkpoint=99, out_loss=1)
+            self.signal_prepared.emit()
+            logging.debug("[EST] Estimators loaded")
+        except Exception as e:
+            track = traceback.format_exc()
+            logging.error(track)
 
     @QtCore.Slot(tuple)
     def run(self, frames: tuple):
-        frame, depth = frames
-        logging.debug("[EST] Receiving frames")
-        # DONE. Compute frames.
-        res = self.detector.run(frame, threshold=0.8)
+        try:
+            frame, depth = frames
+            logging.debug("[EST] Receiving frames")
+            # DONE. Compute frames.
+            res = self.detector.run(frame, threshold=0.8)
 
-        if res is not None:
-            # DONE. Improve selection process on multiple faces. Use centermost bbox.
-            if len(res[0]) > 1:
-                bboxes = np.array(res[0])[:, :4]
-                frame_center = np.array(frame.shape)[:2][::-1] // 2
-                boxes_center = bboxes[:, :2] + bboxes[:, 2:]// 2
-                idx = np.argmin(
-                    np.sum(np.abs(boxes_center - frame_center), axis=1)
-                )
+            if res is not None:
+                # DONE. Improve selection process on multiple faces. Use centermost bbox.
+                if len(res[0]) > 1:
+                    bboxes = np.array(res[0])[:, :4]
+                    frame_center = np.array(frame.shape)[:2][::-1] // 2
+                    boxes_center = bboxes[:, :2] + bboxes[:, 2:]// 2
+                    idx = np.argmin(
+                        np.sum(np.abs(boxes_center - frame_center), axis=1)
+                    )
 
-                bbox = bboxes[idx]
-            else:
-                bbox = res[0][0][:4]
+                    bbox = bboxes[idx]
+                else:
+                    bbox = res[0][0][:4]
 
-            det = self.estimator.preprocess_image(frame, bbox)
-            ang = self.estimator.run(det)
+                det = self.estimator.preprocess_image(frame, bbox)
+                ang = self.estimator.run(det)
 
-            logging.debug("[EST] Sending angle %s .", ang)
+                logging.debug("[EST] Sending angle %s .", ang)
 
-            est = EstimationData(box=bbox, angle=ang, rgb=frame, depth=depth)
-            self.result_signal.emit(est)
-        self.signal_done.emit()
+                est = EstimationData(box=bbox, angle=ang, rgb=frame, depth=depth)
+                self.result_signal.emit(est)
+            self.signal_done.emit()
+        except Exception as e:
+            track = traceback.format_exc()
+            logging.error(track)
 
 
 
