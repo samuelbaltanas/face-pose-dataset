@@ -2,6 +2,17 @@ import argparse
 import logging
 import os
 import sys
+import platform
+
+logging.getLogger().setLevel(logging.INFO)
+
+import PySide2
+
+if platform.system() == "Windows":
+    dirname = os.path.dirname(PySide2.__file__)
+    plugin_path = os.path.join(dirname, 'plugins', 'platforms')
+    logging.info("%s is a dir : %s", plugin_path, os.path.isdir(plugin_path))
+    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
 from PySide2 import QtCore, QtWidgets
 
@@ -54,6 +65,7 @@ def main(args):
         app = QtWidgets.QApplication(sys.argv)
 
         logging.info(args)
+        logging.info("Platform: %s", platform.platform())
 
         if args.force_cpu:
             os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
